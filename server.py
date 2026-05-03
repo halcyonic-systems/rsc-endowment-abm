@@ -73,8 +73,14 @@ def reset_model(**kwargs):
 
 @app.route("/")
 def index():
-    """Interactive dashboard."""
+    """Interactive dashboard (v3)."""
     return render_template("index.html")
+
+
+@app.route("/v4")
+def v4():
+    """v4 Observatory prototype."""
+    return render_template("v4-kpi-prototype.html")
 
 
 @app.route("/api")
