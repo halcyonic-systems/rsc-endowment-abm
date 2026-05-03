@@ -6,8 +6,9 @@ Primary question: What participation_rate does the market equilibrate to?
 """
 
 import os
+from functools import wraps
 
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 
 from src import (
     EndowmentModel,
@@ -21,6 +22,31 @@ from src import (
 )
 
 app = Flask(__name__)
+
+# ============================================
+# Auth Gate (password-protect until ready)
+# ============================================
+
+AUTH_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "")
+
+def check_auth(password):
+    return password == AUTH_PASSWORD
+
+def authenticate():
+    return Response(
+        "Access restricted. This observatory is not yet public.\n",
+        401,
+        {"WWW-Authenticate": 'Basic realm="RSC Endowment Observatory"'},
+    )
+
+@app.before_request
+def require_auth():
+    if not AUTH_PASSWORD:
+        return
+    auth = request.authorization
+    if not auth or not check_auth(auth.password):
+        return authenticate()
+
 
 # Global model instance
 model = None
