@@ -1,6 +1,6 @@
 # RSC Endowment Simulator
 
-An interactive simulator for [ResearchHub's](https://www.researchhub.com/) 2026 Endowment mechanism — built directly from RH's published product docs and yield model CSV.
+An agent-based model for [ResearchHub's](https://www.researchhub.com/) 2026 Endowment mechanism — built from RH's published product docs and yield model CSV, now tracking the live endowment launched April 10, 2026.
 
 ### **[Try the Live Demo](https://rsc-endowment-abm-production.up.railway.app)** — no install required
 
@@ -8,9 +8,19 @@ Enter an endowment amount, pick a scenario, hit Run. Watch the market find its l
 
 ---
 
+## Status
+
+**v3 (current, deployed):** Pure synthetic simulator. Four agent archetypes, self-balancing participation dynamics, Flask API + single-page dashboard. Predicted 6/8 observed outcomes before launch.
+
+**v4 (in development):** Data-assimilated model that ingests real on-chain data, calibrates against observed behavior, and projects forward. Three operating modes — Synthetic (v3 preserved), Replay (historical chain data), Forecast (project from current state). See [v4 design notes](docs/v4-design-notes.md) and [roadmap](docs/ROADMAP.md).
+
+**The endowment launched April 10, 2026.** The model predicted self-balancing APY compression, yield seeker entry patterns, supply squeeze → price appreciation, and whale concentration risk — all confirmed within 13 days. Live tracking data and on-chain forensics are in [endowment-live-tracking.md](docs/endowment-live-tracking.md).
+
+---
+
 ## What it does
 
-ResearchHub lets you hold RSC and earn yield automatically — no lockups, no staking. The yield comes as funding credits you deploy to research proposals. Your principal is never spent.
+ResearchHub lets you hold RSC and earn yield automatically — no lockups, no staking. The yield comes as non-transferable funding credits you deploy to research proposals. Researchers receive USD payouts. Your principal is never spent.
 
 This simulator makes that mechanism tangible:
 
@@ -155,11 +165,16 @@ rsc-endowment-abm/
 ├── src/
 │   ├── model.py        # EndowmentModel — emissions engine, participation tracking
 │   ├── agents.py       # EndowmentHolder (yield, exit dynamics), EndowmentProposal
-│   └── constants.py    # TIME_WEIGHT_MULTIPLIERS, EMISSION_PARAMS, ARCHETYPES
+│   ├── constants.py    # TIME_WEIGHT_MULTIPLIERS, EMISSION_PARAMS, ARCHETYPES
+│   └── data/           # (v4) Data feeds, SQLite store, chain snapshots
 ├── templates/
 │   └── index.html      # Single-page dashboard (HTML/CSS/JS, no build step)
 ├── docs/
-│   └── rh-reference/   # RH product doc, community doc, yield model CSV
+│   ├── rh-reference/   # RH product doc, community doc, yield model CSV
+│   ├── endowment-live-tracking.md  # Comprehensive on-chain tracking since launch
+│   ├── v4-design-notes.md          # v4 architecture (modes, data layer, stress scenarios)
+│   ├── ROADMAP.md                  # Project roadmap (v1-v3 complete, v4 phases)
+│   └── chain-data-calibration-plan.md  # Data pipeline technical spec
 ├── server.py           # Flask REST API
 └── requirements.txt
 ```
