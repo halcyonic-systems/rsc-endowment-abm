@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RSC Endowment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════════════════════ */
+    :root {
+      /* Surfaces — warm paper, cool recessed */
+      --bg:           #FAF9F5;
+      --bg-elevated:  #FFFFFF;
+      --bg-recessed:  #EEF1F5;
+      --bg-tint-blue: #EFF4FF;
+      --bg-tint-teal: rgba(13, 148, 136, 0.06);
+
+      /* Ink — Halcyonic slate (cool undertone) */
+      --ink:    #1E293B;
+      --ink-2:  #475569;
+      --ink-3:  #64748B;
+      --ink-4:  #94A3B8;
+
+      /* Borders */
+      --border-crisp: #E2E8F0;
+      --border-cool:  #E5E7EB;
+      --border-hair:  #F1F5F9;
+      --border-blue:  #C9D6FB;
+      --border-teal:  rgba(13, 148, 136, 0.20);
+
+      /* Three epistemic colors */
+      --observed:       #1E293B;
+      --predicted:      #3971FF;
+      --predicted-soft: rgba(57, 113, 255, 0.10);
+      --predicted-band: rgba(57, 113, 255, 0.06);
+      --systemic:       #0D9488;
+      --systemic-soft:  rgba(13, 148, 136, 0.10);
+
+      /* Status */
+      --pos:      #0F766E;
+      --pos-soft: rgba(15, 118, 110, 0.10);
+      --neg:      #B84A3D;
+      --neg-soft: rgba(184, 74, 61, 0.10);
+      --warn:     #B8893E;
+      --gold:     #B8893E;
+
+      --radius-card:  10px;
+      --radius-input: 6px;
+      --radius-pill:  6px;
+      --radius-tag:   4px;
+
+      --shadow-subtle: 0 1px 0 rgba(20,20,19,0.02);
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --dur: 200ms;
+    }
+
+    /* ═══ Reset ═══ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══ Typography ═══ */
+    .t-display {
+      font-size: clamp(2.25rem, 7vw, 3.25rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      font-feature-settings: "tnum" 1;
+      color: var(--ink);
+    }
+    .t-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-feature-settings: "tnum" 1; }
+    .t-serif { font-family: 'Source Serif 4', Georgia, serif; }
+    .t-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-4); }
+    .t-sublabel { font-size: 10.5px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink-4); }
+    .t-caption { font-size: 0.8125rem; line-height: 1.4; color: var(--ink-3); }
+
+    /* ═══ Epistemic values ═══ */
+    .value--observed { color: var(--observed); font-variant-numeric: tabular-nums; }
+    .value--predicted { color: var(--predicted); font-variant-numeric: tabular-nums; }
+    .value--predicted::before { content: "→ "; opacity: 0.6; }
+
+    /* ═══ Panel vocabulary (border-first) ═══ */
+    .panel { border-radius: var(--radius-card); position: relative; }
+
+    .panel--elevated {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-crisp);
+      box-shadow: var(--shadow-subtle);
+    }
+    .panel--elevated.panel--observed { border-top: 2px solid var(--observed); }
+    .panel--elevated.panel--predicted-top { border-top: 2px solid var(--predicted); }
+
+    .panel--recessed {
+      background: var(--bg-recessed);
+      border: 1px solid var(--border-hair);
+    }
+
+    .panel--hairline {
+      background: transparent;
+      border: 1px solid var(--border-crisp);
+      transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur) var(--ease);
+    }
+    .panel--hairline:hover {
+      border-color: var(--predicted);
+      box-shadow: inset 0 0 0 1px var(--predicted);
+      background: rgba(57, 113, 255, 0.025);
+    }
+    .panel--hairline.active {
+      border-color: var(--predicted);
+      box-shadow: inset 0 0 0 1px var(--predicted);
+      background: var(--bg-tint-blue);
+    }
+
+    .panel--predicted-rule { border-left: 2px solid var(--predicted); }
+    .panel--observed-rule { border-left: 2px solid var(--observed); }
+
+    /* ═══ Livebar ═══ */
+    .livebar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 24px;
+      background: rgba(250, 249, 245, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-blue);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11.5px;
+      color: var(--ink-3);
+    }
+    .livebar .mono { font-feature-settings: "tnum" 1; color: var(--ink); font-size: 12.5px; font-weight: 500; }
+    .livebar .gold { color: var(--gold); }
+    .livebar__dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--systemic);
+      box-shadow: 0 0 0 3px var(--systemic-soft);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 3px var(--systemic-soft); }
+      50% { box-shadow: 0 0 0 6px rgba(13, 148, 136, 0); }
+    }
+    .livebar__label { color: var(--systemic); letter-spacing: 0.06em; font-weight: 500; }
+    .livebar__push { flex: 1; }
+    .rule { width: 1px; height: 12px; background: var(--border-crisp); display: inline-block; vertical-align: middle; }
+
+    /* ═══ Tab bar ═══ */
+    .tabbar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border-crisp);
+      margin-bottom: 48px;
+    }
+    .tabbar__tab {
+      padding: 14px 24px 12px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--ink-4);
+      position: relative;
+      transition: color var(--dur) var(--ease);
+    }
+    .tabbar__tab:hover { color: var(--ink-2); }
+    .tabbar__tab.active { color: var(--ink); }
+    .tabbar__tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+    .tabbar__tab[data-panel="tracker"].active::after { background: var(--observed); }
+    .tabbar__tab[data-panel="simulation"].active::after { background: var(--predicted); }
+    .tabbar__tab[data-panel="simulation"] .tab-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--predicted);
+      display: inline-block;
+      margin-left: 6px;
+      vertical-align: middle;
+      opacity: 0.6;
+    }
+    .tabbar__tab[data-panel="tracker"] .tab-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--observed);
+      display: inline-block;
+      margin-left: 6px;
+      vertical-align: middle;
+      opacity: 0.6;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ═══ Page layout ═══ */
+    .page { max-width: 1080px; margin: 0 auto; padding: 32px 32px 80px; }
+    @media (max-width: 760px) { .page { padding: 20px 16px 64px; } }
+
+    /* Future: side-by-side mode */
+    .panels-container { position: relative; }
+    @media (min-width: 1400px) {
+      .panels-container.side-by-side {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+      .panels-container.side-by-side .tab-panel { display: block; }
+      .panels-container.side-by-side .tabbar { display: none; }
+    }
+
+    /* ═══ Doc-section ═══ */
+    .tab-panel { border-left: 1px solid var(--border-hair); padding-left: 0; }
+    .doc-section {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 40px;
+      padding: 36px 0 36px 24px;
+    }
+    .doc-section:first-of-type { padding-top: 0; }
+    .doc-section__meta { position: sticky; top: 56px; align-self: start; }
+    .doc-section__eyebrow {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10.5px; letter-spacing: 0.08em;
+      color: var(--systemic); text-transform: uppercase;
+      margin-bottom: 8px; opacity: 0.8;
+    }
+    .doc-section__title {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 18px; font-weight: 500; line-height: 1.25;
+      color: var(--ink); letter-spacing: -0.01em; margin-bottom: 6px;
+    }
+    .doc-section__desc {
+      font-size: 12.5px; line-height: 1.5;
+      color: var(--ink-3); margin-bottom: 14px; max-width: 24ch;
+    }
+    .doc-section__attrs {
+      display: grid; grid-template-columns: auto 1fr;
+      gap: 3px 8px; font-size: 10px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    .doc-section__attrs dt { color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; }
+    .doc-section__attrs dd { color: var(--ink-2); }
+    .doc-section__body { min-width: 0; }
+
+    @media (max-width: 760px) {
+      .doc-section { grid-template-columns: 1fr; gap: 10px; padding: 28px 0; }
+      .doc-section__meta { position: static; }
+      .doc-section__desc, .doc-section__attrs { display: none; }
+    }
+
+    /* ═══ KPI strip ═══ */
+    .kpi-strip { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 640px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
+    .kpi-card { padding: 22px; }
+    .kpi-card .t-label { margin-bottom: 8px; }
+    .kpi-value-row { display: flex; align-items: baseline; gap: 6px; }
+    .kpi-unit { font-size: 0.875rem; font-weight: 500; color: var(--ink-3); padding-bottom: 3px; }
+    .kpi-trend {
+      display: inline-flex; align-items: center; gap: 4px;
+      margin-top: 10px; padding: 3px 8px;
+      border-radius: var(--radius-pill); font-size: 11px; font-weight: 500;
+    }
+    .kpi-trend.up { background: var(--pos-soft); color: var(--pos); }
+    .kpi-trend.context { background: var(--predicted-soft); color: var(--predicted); }
+    .kpi-trend.model-derived { background: var(--predicted-soft); color: var(--predicted); }
+
+    /* Context strip (bordered transparent) */
+    .context-strip {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 0; padding: 10px 16px; margin-top: 14px;
+      border: 1px solid var(--border-crisp);
+      border-radius: var(--radius-input);
+      font-size: 12px; color: var(--ink-3);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      background: transparent;
+    }
+    .context-strip span { white-space: nowrap; padding: 0 10px; }
+    .context-strip .rule { margin: 0; }
+
+    /* ═══ Scenario grid ═══ */
+    .scenario-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 640px) { .scenario-grid { grid-template-columns: repeat(2, 1fr); } }
+    .scenario-card { padding: 18px; cursor: pointer; border-radius: var(--radius-card); }
+    .scenario-icon {
+      width: 26px; height: 26px; border-radius: var(--radius-tag);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px; font-size: 13px;
+    }
+    .scenario-icon.risk { background: var(--neg-soft); }
+    .scenario-icon.loop { background: var(--predicted-soft); }
+    .scenario-icon.growth { background: var(--pos-soft); }
+    .scenario-card h3 { font-size: 0.85rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+    .scenario-card p { font-size: 12px; color: var(--ink-3); line-height: 1.45; }
+    .scenario-tag {
+      display: inline-block; margin-top: 8px;
+      font-size: 10px; font-weight: 500;
+      padding: 2px 7px; border-radius: var(--radius-tag);
+      color: var(--predicted); border: 1px solid var(--border-blue);
+      background: var(--predicted-soft);
+    }
+
+    /* ═══ Chart ═══ */
+    .chart-wrapper { padding: 24px; border-radius: var(--radius-card); }
+    .chart-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 18px; gap: 14px; }
+    .chart-legend { display: flex; gap: 14px; }
+    .chart-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-3); }
+    .legend-swatch { width: 18px; height: 2.5px; border-radius: 2px; }
+    .legend-swatch.actual { background: var(--observed); }
+    .legend-swatch.model { background: repeating-linear-gradient(90deg, var(--predicted) 0px, var(--predicted) 2px, transparent 2px, transparent 5px); }
+    .legend-swatch.band { background: var(--predicted); opacity: 0.15; height: 8px; border-radius: 3px; }
+
+    .chart-area { position: relative; width: 100%; height: 180px; margin-left: 36px; }
+    .chart-area svg { width: calc(100% - 36px); height: 100%; display: block; }
+    .chart-y-labels {
+      position: absolute; left: -36px; top: 0; bottom: 0;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 2px 0; font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px; color: var(--ink-4);
+    }
+    .chart-x-labels {
+      display: flex; justify-content: space-between; margin-left: 36px; padding-top: 8px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10px; color: var(--ink-4);
+    }
+    .chart-annotation {
+      position: absolute; font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10.5px; padding: 3px 7px; border-radius: var(--radius-tag); white-space: nowrap;
+    }
+    .chart-annotation.observed-ann { color: var(--observed); background: var(--bg-elevated); border: 1px solid var(--border-crisp); }
+    .chart-annotation.predicted-ann { color: var(--predicted); background: var(--bg-tint-blue); border: 1px solid var(--border-blue); }
+
+    .figure-caption {
+      font-family: 'Source Serif 4', Georgia, serif; font-style: italic;
+      font-size: 12px; line-height: 1.55; color: var(--ink-3);
+      max-width: 58ch; margin-top: 14px; margin-left: 36px;
+    }
+    .figure-caption .predicted-ref { color: var(--predicted); }
+
+    /* ═══ Chart bleed ═══ */
+    .chart-bleed { margin-right: -60px; }
+    @media (max-width: 760px) { .chart-bleed { margin-right: 0; } }
+
+    /* ═══ Health strip ═══ */
+    .health-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; }
+    @media (min-width: 640px) { .health-strip { grid-template-columns: repeat(4, 1fr); } }
+    .health-item { padding: 16px 14px; text-align: center; border-top: 1px solid var(--border-hair); }
+    .health-dot {
+      width: 6px; height: 6px; border-radius: 50%; margin: 0 auto 8px;
+    }
+    .health-dot.green { background: var(--pos); box-shadow: 0 0 0 3px var(--pos-soft); }
+    .health-dot.teal { background: var(--systemic); box-shadow: 0 0 0 3px var(--systemic-soft); }
+    .health-dot.cobalt { background: var(--predicted); box-shadow: 0 0 0 3px var(--predicted-soft); }
+    .health-dot.amber { background: var(--warn); box-shadow: 0 0 0 3px rgba(184, 137, 62, 0.12); }
+    .health-value { font-size: 0.875rem; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+
+    /* ═══ Activity feed ═══ */
+    .feed-item {
+      display: grid; grid-template-columns: 26px 1fr auto;
+      gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-hair);
+      align-items: start;
+    }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-icon {
+      width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600;
+      background: var(--predicted-soft); color: var(--predicted);
+    }
+    .feed-body p { font-size: 13px; line-height: 1.4; }
+    .feed-body .sub { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+    .feed-time {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px; color: var(--ink-4); padding-top: 2px;
+    }
+
+    /* ═══ Page header ═══ */
+    .page-header {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-hair);
+    }
+    .page-header__title {
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .page-header__sub {
+      font-size: 14px;
+      color: var(--ink-3);
+      line-height: 1.5;
+      max-width: 52ch;
+    }
+    .page-header__meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--ink-4);
+    }
+    .page-header__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: var(--radius-tag);
+      border: 1px solid var(--border-teal);
+      background: var(--bg-tint-teal);
+      color: var(--systemic);
+      font-size: 10.5px;
+      font-weight: 500;
+    }
+
+    /* ═══ Footer ═══ */
+    .page-footer {
+      margin-top: 40px; padding-top: 20px;
+      border-top: 1px solid var(--border-hair);
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--ink-4);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ LIVEBAR ═══ -->
+  <div class="livebar">
+    <div class="livebar__dot"></div>
+    <span class="livebar__label">LIVE</span>
+    <span class="rule"></span>
+    <span>Block <span class="mono">21,438,221</span></span>
+    <span class="rule"></span>
+    <span>synced 2h ago</span>
+    <span class="livebar__push"></span>
+    <span class="mono">11.2M RSC</span>
+    <span class="rule"></span>
+    <span class="mono">5.1%</span>
+    <span class="rule"></span>
+    <span class="mono gold">84% APY</span>
+  </div>
+
+  <div class="page">
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <header class="page-header">
+      <h1 class="page-header__title">RSC Endowment Observatory</h1>
+      <p class="page-header__sub">Live monitoring and agent-based simulation of the ResearchHub decentralized endowment mechanism. Modeled before launch, tracking since day one.</p>
+      <div class="page-header__meta">
+        <span>Halcyonic Systems</span>
+        <span class="rule"></span>
+        <span>Launched Apr 10, 2026</span>
+        <span class="rule"></span>
+        <span class="page-header__badge">MODEL v0.4.2</span>
+      </div>
+    </header>
+
+    <!-- ═══ TAB BAR ═══ -->
+    <nav class="tabbar">
+      <button class="tabbar__tab active" data-panel="tracker" onclick="switchTab('tracker')">
+        Tracker<span class="tab-dot"></span>
+      </button>
+      <button class="tabbar__tab" data-panel="simulation" onclick="switchTab('simulation')">
+        Simulation<span class="tab-dot"></span>
+      </button>
+    </nav>
+
+    <div class="panels-container">
+
+      <!-- ═══════════════════════════════════════
+           TRACKER — "What Is" (ink/observed)
+      ═══════════════════════════════════════ -->
+      <div class="tab-panel active" id="panel-tracker">
+
+        <!-- § 01 — Pool Health -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 01</p>
+            <h2 class="doc-section__title">Pool Health</h2>
+            <p class="doc-section__desc">Cumulative deposits, participation, and realized credit yield.</p>
+            <dl class="doc-section__attrs">
+              <dt>Source</dt><dd>Base L2</dd>
+              <dt>Updated</dt><dd>2h ago</dd>
+              <dt>Depositors</dt><dd>~15 known</dd>
+            </dl>
+          </header>
+          <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
+            <div class="kpi-strip">
+              <div class="kpi-card panel panel--elevated panel--observed">
+                <div class="t-label">Pool Size</div>
+                <div class="kpi-value-row">
+                  <span class="t-display t-mono">11.2</span>
+                  <span class="kpi-unit">M RSC</span>
+                </div>
+                <div class="kpi-trend up">
+                  <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg>
+                  +34% this week
+                </div>
+              </div>
+              <div class="kpi-card panel panel--elevated panel--observed">
+                <div class="t-label">Participation</div>
+                <div class="kpi-value-row">
+                  <span class="t-display t-mono">5.1</span>
+                  <span class="kpi-unit">%</span>
+                </div>
+                <div class="kpi-trend context">
+                  <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg>
+                  from 0.38% at launch
+                </div>
+              </div>
+              <div class="kpi-card panel panel--elevated panel--observed">
+                <div class="t-label">Credit APY</div>
+                <div class="kpi-value-row">
+                  <span class="t-display t-mono" style="color: var(--gold);">84</span>
+                  <span class="kpi-unit">%</span>
+                </div>
+                <div class="kpi-trend model-derived">
+                  <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg>
+                  compressing (healthy)
+                </div>
+              </div>
+            </div>
+            <div class="context-strip">
+              <span>Circ: 220M RSC</span><span class="rule"></span>
+              <span>Price: $0.096</span><span class="rule"></span>
+              <span>Emission: 26,027/day</span><span class="rule"></span>
+              <span>Burns: ~300/day</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- § 02 — System Health -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 02</p>
+            <h2 class="doc-section__title">System Health</h2>
+            <p class="doc-section__desc">Structural risk indicators from on-chain state.</p>
+          </header>
+          <div class="doc-section__body">
+            <div class="health-strip">
+              <div class="health-item">
+                <div class="health-dot teal"></div>
+                <div class="health-value t-mono">Low</div>
+                <div class="t-caption">Concentration</div>
+              </div>
+              <div class="health-item">
+                <div class="health-dot teal"></div>
+                <div class="health-value t-mono">Active</div>
+                <div class="t-caption">Self-balancing</div>
+              </div>
+              <div class="health-item">
+                <div class="health-dot amber"></div>
+                <div class="health-value t-mono">Thin</div>
+                <div class="t-caption">Order book</div>
+              </div>
+              <div class="health-item">
+                <div class="health-dot green"></div>
+                <div class="health-value t-mono">0</div>
+                <div class="t-caption">Exits (7d)</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- § 03 — Pool Growth Chart -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 03</p>
+            <h2 class="doc-section__title">Pool Growth</h2>
+            <p class="doc-section__desc">Cumulative RSC deposited over time. Three phase-transition doublings visible.</p>
+            <dl class="doc-section__attrs">
+              <dt>Source</dt><dd>Credit-implied</dd>
+              <dt>Method</dt><dd>Daily emission / share</dd>
+            </dl>
+          </header>
+          <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
+            <div class="panel panel--elevated panel--observed chart-bleed" style="padding: 24px;">
+              <div class="chart-area">
+                <div class="chart-y-labels">
+                  <span>12M</span><span>8M</span><span>4M</span><span>0</span>
+                </div>
+                <svg viewBox="0 0 400 160" preserveAspectRatio="none">
+                  <!-- Pool growth: step function with three doublings -->
+                  <path d="M0,155 L30,155 L32,148 L60,146 L62,142 L90,140 L92,138
+                           L120,136 L122,100 L150,98 L152,96 L180,95
+                           L182,94 L210,93 L212,48 L240,46 L242,44 L270,42
+                           L272,40 L300,38 L302,36 L330,34 L332,32 L360,30 L400,28"
+                        stroke="var(--observed)" stroke-width="2" fill="none" stroke-linecap="round"/>
+                  <!-- Phase transition markers -->
+                  <line x1="122" y1="0" x2="122" y2="160" stroke="var(--border-crisp)" stroke-width="1" stroke-dasharray="3 3"/>
+                  <line x1="212" y1="0" x2="212" y2="160" stroke="var(--border-crisp)" stroke-width="1" stroke-dasharray="3 3"/>
+                </svg>
+                <div class="chart-annotation observed-ann" style="left: 100px; top: 4px; font-size: 9px;">Foundation 769K</div>
+                <div class="chart-annotation observed-ann" style="left: 195px; top: 4px; font-size: 9px;">Whale ~5M</div>
+              </div>
+              <div class="chart-x-labels">
+                <span>Apr 10</span><span>Apr 13</span><span>Apr 16</span><span>Apr 19</span><span>Apr 22</span>
+              </div>
+              <p class="figure-caption">
+                Credit-implied total platform RSC. Vertical dashes mark phase transitions where pool doubled overnight. Data derived from daily emission share analysis.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- § 04 — Depositor Table -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 04</p>
+            <h2 class="doc-section__title">Depositors</h2>
+            <p class="doc-section__desc">Known participants by on-chain forensics. 15 identified, ~7.9M RSC untraced.</p>
+            <dl class="doc-section__attrs">
+              <dt>Identified</dt><dd>15 addresses</dd>
+              <dt>Gap</dt><dd>7.9M untraced</dd>
+              <dt>Method</dt><dd>Blockscout + Dune</dd>
+            </dl>
+          </header>
+          <div class="doc-section__body panel--observed-rule" style="padding-left: 14px; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'JetBrains Mono', monospace;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-crisp); text-align: left;">
+                  <th style="padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);">Entity</th>
+                  <th style="padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);">Amount</th>
+                  <th style="padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);">Share</th>
+                  <th style="padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);">Date</th>
+                  <th style="padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px;">Untraced whale</td>
+                  <td style="padding: 10px; color: var(--ink);">~5,000K</td>
+                  <td style="padding: 10px;">44.6%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">Apr 20</td>
+                  <td style="padding: 10px;"><span style="color: var(--warn); font-size: 10px;">&#x26A0; WATCH</span></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px;">RH Foundation</td>
+                  <td style="padding: 10px; color: var(--ink);">769K</td>
+                  <td style="padding: 10px;">6.9%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">Apr 16</td>
+                  <td style="padding: 10px;"><span style="color: var(--pos); font-size: 10px;">ALIGNED</span></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px;">J. Koury (President)</td>
+                  <td style="padding: 10px; color: var(--ink);">477K</td>
+                  <td style="padding: 10px;">4.3%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">Apr 10</td>
+                  <td style="padding: 10px;"><span style="color: var(--pos); font-size: 10px;">ALIGNED</span></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px;">0xa0de...87B1</td>
+                  <td style="padding: 10px; color: var(--ink);">205K</td>
+                  <td style="padding: 10px;">1.8%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">Apr 15–23</td>
+                  <td style="padding: 10px;"><span style="color: var(--predicted); font-size: 10px;">YIELD</span></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px;">0x20e4...6130</td>
+                  <td style="padding: 10px; color: var(--ink);">200K</td>
+                  <td style="padding: 10px;">1.8%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">Apr 17–22</td>
+                  <td style="padding: 10px;"><span style="color: var(--predicted); font-size: 10px;">YIELD</span></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px;">0x9733...f59A</td>
+                  <td style="padding: 10px; color: var(--ink);">67K</td>
+                  <td style="padding: 10px;">0.6%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">Apr 17</td>
+                  <td style="padding: 10px;"><span style="color: var(--predicted); font-size: 10px;">YIELD</span></td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-hair);">
+                  <td style="padding: 10px; color: var(--ink-3); font-style: italic;" colspan="5">+ 9 smaller depositors (8K–55K RSC each)</td>
+                </tr>
+                <tr style="background: var(--bg-recessed);">
+                  <td style="padding: 10px; font-weight: 600;">Untraced gap</td>
+                  <td style="padding: 10px; color: var(--neg); font-weight: 600;">~7.9M</td>
+                  <td style="padding: 10px; font-weight: 600;">~39%</td>
+                  <td style="padding: 10px; color: var(--ink-3);">—</td>
+                  <td style="padding: 10px;"><span style="color: var(--neg); font-size: 10px;">UNKNOWN</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="figure-caption" style="margin-left: 0; margin-top: 12px;">
+              Depositor identification via Blockscout transfer tracing + Dune Sim API balance queries. "Share" = proportion of credit-implied 11.2M total. Gap represents RSC flowing through undiscovered collection infrastructure.
+            </p>
+          </div>
+        </section>
+
+        <!-- § 05 — Treasury Watch -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 05</p>
+            <h2 class="doc-section__title">Treasury Watch</h2>
+            <p class="doc-section__desc">Monitoring wallets with potential to move markets. Any outbound = price shock.</p>
+            <dl class="doc-section__attrs">
+              <dt>Risk model</dt><dd>Thin book × size</dd>
+              <dt>Alert</dt><dd>Any transfer</dd>
+            </dl>
+          </header>
+          <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
+            <div style="display: grid; gap: 12px;">
+              <!-- Watch card 1 -->
+              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600;">0x3e3f...7161</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--neg-soft); color: var(--neg); font-weight: 500;">HIGH RISK</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    Holding 1.29M RSC from Foundation Community disbursement (Apr 23). If sold on exchange: ~40% price impact on current book depth. Currently idle.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono" style="font-size: 16px; font-weight: 700;">1.71M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+              <!-- Watch card 2 -->
+              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600;">Foundation Community</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: rgba(184, 137, 62, 0.12); color: var(--warn); font-weight: 500;">MONITOR</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    0xc4cf...f81e3 &middot; Primary source of sell-side supply. Monthly contributor pay + ad hoc grants. Each disbursement is an impulse shock to thin order books.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono" style="font-size: 16px; font-weight: 700;">7.09M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+              <!-- Watch card 3 -->
+              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600;">Foundation Treasury</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--bg-recessed); color: var(--ink-3); font-weight: 500;">DORMANT</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    0x5222...291f1 &middot; 47.4% of total supply. No activity since endowment launch. If even 10% enters endowment, pool 4x overnight.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono" style="font-size: 16px; font-weight: 700;">473.7M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- § 06 — Activity -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 06</p>
+            <h2 class="doc-section__title">Activity</h2>
+            <p class="doc-section__desc">Recent on-chain events.</p>
+          </header>
+          <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
+            <div class="feed-item">
+              <div class="feed-icon">+</div>
+              <div class="feed-body">
+                <p><strong>Foundation deposited 769K RSC</strong></p>
+                <div class="sub">From treasury &middot; strongest alignment signal to date</div>
+              </div>
+              <div class="feed-time">Apr 16</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-icon">+</div>
+              <div class="feed-body">
+                <p><strong>New depositor: 1.29M RSC</strong></p>
+                <div class="sub">Unknown wallet &middot; received from Foundation Community</div>
+              </div>
+              <div class="feed-time">Apr 23</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-icon">&rarr;</div>
+              <div class="feed-body">
+                <p><strong>Daily emission: 26,027 credits</strong></p>
+                <div class="sub">Split across ~15 depositors proportionally</div>
+              </div>
+              <div class="feed-time">Today</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-icon">+</div>
+              <div class="feed-body">
+                <p><strong>Endowment launched</strong></p>
+                <div class="sub">First deposits received &middot; mechanism live on Base L2</div>
+              </div>
+              <div class="feed-time">Apr 10</div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════
+           SIMULATION — "What Could Be" (cobalt/predicted)
+      ═══════════════════════════════════════ -->
+      <div class="tab-panel" id="panel-simulation">
+
+        <!-- § 01 — Model vs Reality (leads, earns credibility) -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 01</p>
+            <h2 class="doc-section__title">Model vs Reality</h2>
+            <p class="doc-section__desc">ABM forecast against on-chain deposits since launch.</p>
+            <dl class="doc-section__attrs">
+              <dt>Model</dt><dd>v0.4.2</dd>
+              <dt>MAE</dt><dd>1.8%</dd>
+              <dt>Runs</dt><dd>n = 500</dd>
+              <dt>Updated</dt><dd>2h ago</dd>
+            </dl>
+          </header>
+          <div class="doc-section__body">
+            <div class="chart-wrapper panel panel--elevated panel--predicted-top panel--predicted-rule chart-bleed" style="padding-left: 26px;" id="sim-chart">
+              <div class="chart-header">
+                <div class="chart-legend">
+                  <div class="chart-legend-item"><div class="legend-swatch actual"></div><span>On-chain</span></div>
+                  <div class="chart-legend-item"><div class="legend-swatch model"></div><span>ABM forecast</span></div>
+                  <div class="chart-legend-item"><div class="legend-swatch band"></div><span>80% CI</span></div>
+                  <div class="chart-legend-item" id="scenario-legend" style="display: none;">
+                    <div class="legend-swatch" style="background: var(--neg); height: 2.5px;"></div>
+                    <span id="scenario-legend-label">Scenario</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-area">
+                <div class="chart-y-labels">
+                  <span>14M</span><span>10M</span><span>6M</span><span>2M</span><span>0</span>
+                </div>
+                <svg viewBox="0 0 500 200" preserveAspectRatio="none" id="sim-svg">
+                  <!-- Confidence band -->
+                  <path d="M0,185 C40,180 80,155 120,135 160,115 200,95 240,78 280,65 320,55 360,47 400,40
+                           L400,65 360,72 320,82 280,92 240,105 200,125 160,145 120,162 80,175 40,183 0,190 Z"
+                        fill="var(--predicted)" opacity="0.06"/>
+                  <!-- Model prediction (cobalt dotted) -->
+                  <path d="M0,187 C40,182 80,158 120,138 160,118 200,98 240,82 280,70 320,60 360,52 400,46"
+                        stroke="var(--predicted)" stroke-width="1.75" stroke-dasharray="2 5" fill="none" stroke-linecap="round" opacity="0.85"/>
+                  <!-- Actual on-chain (solid ink) -->
+                  <path d="M0,190 C20,189 40,187 60,183 80,176 100,165 120,148 140,138 160,130 180,125 200,118 220,112 240,106 260,101 280,97 300,93 320,89 340,85 360,82 380,79 400,76"
+                        stroke="var(--observed)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                  <!-- Current position marker -->
+                  <circle cx="400" cy="76" r="4" fill="var(--observed)"/>
+                  <circle cx="400" cy="46" r="3.5" fill="var(--predicted)" stroke="white" stroke-width="1.5"/>
+                  <!-- Scenario overlay paths (hidden by default) -->
+                  <path id="path-whale" class="scenario-path" d="M400,76 C420,82 440,98 460,120 C480,145 490,158 500,168"
+                        stroke="var(--neg)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="4 3" style="display: none;"/>
+                  <path id="path-foundation" class="scenario-path" d="M400,76 C420,84 440,105 460,130 C480,152 490,165 500,175"
+                        stroke="var(--neg)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="4 3" style="display: none;"/>
+                  <path id="path-cascade" class="scenario-path" d="M400,76 C415,80 430,95 445,115 C460,140 475,162 490,178 500,185"
+                        stroke="var(--neg)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="4 3" style="display: none;"/>
+                  <path id="path-growth" class="scenario-path" d="M400,76 C420,72 440,65 460,56 C480,48 490,42 500,36"
+                        stroke="var(--pos)" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="4 3" style="display: none;"/>
+                  <!-- Scenario endpoint markers (hidden) -->
+                  <circle id="dot-whale" cx="500" cy="168" r="3.5" fill="var(--neg)" style="display: none;"/>
+                  <circle id="dot-foundation" cx="500" cy="175" r="3.5" fill="var(--neg)" style="display: none;"/>
+                  <circle id="dot-cascade" cx="500" cy="185" r="3.5" fill="var(--neg)" style="display: none;"/>
+                  <circle id="dot-growth" cx="500" cy="36" r="3.5" fill="var(--pos)" style="display: none;"/>
+                </svg>
+                <div class="chart-annotation predicted-ann" style="right: 80px; top: 16px;">12.8M predicted</div>
+                <div class="chart-annotation observed-ann" style="right: 80px; top: 50px;">11.2M actual</div>
+                <div class="chart-annotation" id="scenario-annotation" style="display: none; right: 10px; top: 130px; color: var(--neg); background: var(--neg-soft); border: 1px solid rgba(184,74,61,0.2); border-radius: 4px; padding: 3px 7px; font-family: 'JetBrains Mono', monospace; font-size: 10.5px;"></div>
+              </div>
+              <div class="chart-x-labels">
+                <span>Apr 10</span><span>Apr 13</span><span>Apr 16</span><span>Apr 19</span><span>Apr 22</span><span style="color: var(--predicted);">+4 wks</span>
+              </div>
+              <p class="figure-caption">
+                Solid: cumulative RSC deposited (on-chain, Base L2).
+                <span class="predicted-ref">Dotted</span>: ABM median forecast (v0.4.2).
+                Band: 80% credible interval, n=500 runs. Select a stress scenario below to overlay its projected trajectory.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- § 02 — Stress Scenarios (selectable, impacts chart above) -->
+        <section class="doc-section">
+          <header class="doc-section__meta">
+            <p class="doc-section__eyebrow">&sect; 02</p>
+            <h2 class="doc-section__title">Stress Scenarios</h2>
+            <p class="doc-section__desc">Select a scenario to overlay its projected impact on the chart above.</p>
+            <dl class="doc-section__attrs">
+              <dt>Type</dt><dd>Exogenous shocks</dd>
+              <dt>Engine</dt><dd>v3 synthetic</dd>
+            </dl>
+          </header>
+          <div class="doc-section__body panel--predicted-rule" style="padding-left: 14px;">
+            <div class="scenario-grid">
+              <div class="scenario-card panel panel--hairline" data-scenario="whale" onclick="toggleScenario(this)">
+                <div class="scenario-icon risk">&#x26A0;</div>
+                <h3>Whale exits</h3>
+                <p>~5M RSC withdrawn and sold. Pool drops to ~6.2M.</p>
+                <span class="scenario-tag">High impact</span>
+              </div>
+              <div class="scenario-card panel panel--hairline" data-scenario="foundation" onclick="toggleScenario(this)">
+                <div class="scenario-icon risk">&#x1F30A;</div>
+                <h3>Foundation floods</h3>
+                <p>Treasury RSC hits market. Pool drops to ~4.8M.</p>
+                <span class="scenario-tag">High impact</span>
+              </div>
+              <div class="scenario-card panel panel--hairline" data-scenario="cascade" onclick="toggleScenario(this)">
+                <div class="scenario-icon loop">&#x1F503;</div>
+                <h3>Cascade exit</h3>
+                <p>Feedback loop. Pool drops to ~2.1M (death spiral).</p>
+                <span class="scenario-tag">Loop 4</span>
+              </div>
+              <div class="scenario-card panel panel--hairline" data-scenario="growth" onclick="toggleScenario(this)">
+                <div class="scenario-icon growth">&#x2197;</div>
+                <h3>Steady growth</h3>
+                <p>+1%/month. Pool reaches ~14.8M in 4 weeks.</p>
+                <span class="scenario-tag">Base case</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="page-footer">
+      <span>Halcyonic Systems</span>
+      <span class="t-mono">v4 prototype &middot; model v0.4.2</span>
+    </footer>
+
+  </div>
+
+  <script>
+    function switchTab(panel) {
+      document.querySelectorAll('.tabbar__tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`[data-panel="${panel}"]`).classList.add('active');
+      document.getElementById(`panel-${panel}`).classList.add('active');
+    }
+
+    const scenarios = {
+      whale:      { label: '~6.2M (whale exit)', endY: 168, color: 'neg' },
+      foundation: { label: '~4.8M (foundation flood)', endY: 175, color: 'neg' },
+      cascade:    { label: '~2.1M (cascade)', endY: 185, color: 'neg' },
+      growth:     { label: '~14.8M (steady growth)', endY: 36, color: 'pos' }
+    };
+
+    let activeScenario = null;
+
+    function toggleScenario(el) {
+      const id = el.dataset.scenario;
+      const wasActive = el.classList.contains('active');
+
+      // Clear all
+      document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.scenario-path').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('[id^="dot-"]').forEach(d => d.style.display = 'none');
+      document.getElementById('scenario-legend').style.display = 'none';
+      document.getElementById('scenario-annotation').style.display = 'none';
+
+      if (wasActive) {
+        activeScenario = null;
+        return;
+      }
+
+      // Activate selected
+      el.classList.add('active');
+      activeScenario = id;
+
+      const path = document.getElementById('path-' + id);
+      const dot = document.getElementById('dot-' + id);
+      const legend = document.getElementById('scenario-legend');
+      const legendLabel = document.getElementById('scenario-legend-label');
+      const annotation = document.getElementById('scenario-annotation');
+      const info = scenarios[id];
+
+      path.style.display = 'block';
+      dot.style.display = 'block';
+      legend.style.display = 'flex';
+      legendLabel.textContent = info.color === 'neg' ? 'Stress path' : 'Growth path';
+
+      annotation.style.display = 'block';
+      annotation.textContent = info.label;
+      annotation.style.color = info.color === 'neg' ? 'var(--neg)' : 'var(--pos)';
+      annotation.style.background = info.color === 'neg' ? 'var(--neg-soft)' : 'var(--pos-soft)';
+      annotation.style.borderColor = info.color === 'neg' ? 'rgba(184,74,61,0.2)' : 'rgba(15,118,110,0.2)';
+
+      // Position annotation near endpoint
+      const topPos = Math.max(10, Math.min(160, info.endY - 20));
+      annotation.style.top = topPos + 'px';
+    }
+  </script>
+</body>
+</html>
