@@ -23,6 +23,8 @@ Two architectural tensions emerged from today's frontend work that need consciou
 
 **Recommendation:** Option 3. Start SQLite (matches existing spec, zero setup), but use SQLAlchemy Core so the migration is mechanical. Change the live bar from pulsing "LIVE" to "Refreshed 14:18 UTC" until you move to Postgres + real-time indexer.
 
+**Indexer cadence: start daily.** Dune Sim API handles daily polling trivially — one call gets wallet balances + transfers + prices across both chains. Barely touches quota. Webhooks available when ready for real-time later, but daily snapshots are the right v1 granularity.
+
 ### 2. Feed Pattern vs Persisted Store
 
 **Origin:** `docs/v4-design-notes.md` says "the data layer is a feed, not a database — the model pulls from it each step." Today's frontend work created a dashboard that needs a persisted store the API reads from (depositor table, treasury watch, pool growth chart all need historical data, not just the latest feed response).
