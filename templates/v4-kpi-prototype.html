@@ -453,11 +453,11 @@
     <span class="rule"></span>
     <span>synced 2h ago</span>
     <span class="livebar__push"></span>
-    <span class="mono">11.2M RSC</span>
+    <span class="mono" id="live-pool">11.2M RSC</span>
     <span class="rule"></span>
-    <span class="mono">5.1%</span>
+    <span class="mono" id="live-participation">5.1%</span>
     <span class="rule"></span>
-    <span class="mono gold">84% APY</span>
+    <span class="mono gold" id="live-apy">84% APY</span>
   </div>
 
   <div class="page">
@@ -509,10 +509,10 @@
               <div class="kpi-card panel panel--elevated panel--observed">
                 <div class="t-label">Pool Size</div>
                 <div class="kpi-value-row">
-                  <span class="t-display t-mono">11.2</span>
+                  <span class="t-display t-mono" id="kpi-pool">11.2</span>
                   <span class="kpi-unit">M RSC</span>
                 </div>
-                <div class="kpi-trend up">
+                <div class="kpi-trend up" id="kpi-pool-trend">
                   <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg>
                   +34% this week
                 </div>
@@ -520,10 +520,10 @@
               <div class="kpi-card panel panel--elevated panel--observed">
                 <div class="t-label">Participation</div>
                 <div class="kpi-value-row">
-                  <span class="t-display t-mono">5.1</span>
+                  <span class="t-display t-mono" id="kpi-participation">5.1</span>
                   <span class="kpi-unit">%</span>
                 </div>
-                <div class="kpi-trend context">
+                <div class="kpi-trend context" id="kpi-participation-trend">
                   <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg>
                   from 0.38% at launch
                 </div>
@@ -531,20 +531,20 @@
               <div class="kpi-card panel panel--elevated panel--observed">
                 <div class="t-label">Credit APY</div>
                 <div class="kpi-value-row">
-                  <span class="t-display t-mono" style="color: var(--gold);">84</span>
+                  <span class="t-display t-mono" id="kpi-apy" style="color: var(--gold);">84</span>
                   <span class="kpi-unit">%</span>
                 </div>
-                <div class="kpi-trend model-derived">
+                <div class="kpi-trend model-derived" id="kpi-apy-trend">
                   <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg>
                   compressing (healthy)
                 </div>
               </div>
             </div>
             <div class="context-strip">
-              <span>Circ: 220M RSC</span><span class="rule"></span>
-              <span>Price: $0.096</span><span class="rule"></span>
-              <span>Emission: 26,027/day</span><span class="rule"></span>
-              <span>Burns: ~300/day</span>
+              <span id="ctx-circ">Circ: 220M RSC</span><span class="rule"></span>
+              <span id="ctx-price">Price: $0.096</span><span class="rule"></span>
+              <span id="ctx-emission">Emission: 26,027/day</span><span class="rule"></span>
+              <span id="ctx-holders">Holders: —</span>
             </div>
           </div>
         </section>
@@ -559,23 +559,23 @@
           <div class="doc-section__body">
             <div class="health-strip">
               <div class="health-item">
-                <div class="health-dot teal"></div>
-                <div class="health-value t-mono">Low</div>
+                <div class="health-dot teal" id="health-dot-concentration"></div>
+                <div class="health-value t-mono" id="health-concentration">Low</div>
                 <div class="t-caption">Concentration</div>
               </div>
               <div class="health-item">
-                <div class="health-dot teal"></div>
-                <div class="health-value t-mono">Active</div>
+                <div class="health-dot teal" id="health-dot-balance"></div>
+                <div class="health-value t-mono" id="health-balance">Active</div>
                 <div class="t-caption">Self-balancing</div>
               </div>
               <div class="health-item">
-                <div class="health-dot amber"></div>
-                <div class="health-value t-mono">Thin</div>
-                <div class="t-caption">Order book</div>
+                <div class="health-dot amber" id="health-dot-holders"></div>
+                <div class="health-value t-mono" id="health-holders">—</div>
+                <div class="t-caption">Holders</div>
               </div>
               <div class="health-item">
-                <div class="health-dot green"></div>
-                <div class="health-value t-mono">0</div>
+                <div class="health-dot green" id="health-dot-exits"></div>
+                <div class="health-value t-mono" id="health-exits">0</div>
                 <div class="t-caption">Exits (7d)</div>
               </div>
             </div>
@@ -905,28 +905,28 @@
             <p class="doc-section__desc">Select a scenario to overlay its projected impact on the chart above.</p>
             <dl class="doc-section__attrs">
               <dt>Type</dt><dd>Exogenous shocks</dd>
-              <dt>Engine</dt><dd>v3 synthetic</dd>
+              <dt>Engine</dt><dd>v4 aligned</dd>
             </dl>
           </header>
           <div class="doc-section__body panel--predicted-rule" style="padding-left: 14px;">
             <div class="scenario-grid">
-              <div class="scenario-card panel panel--hairline" data-scenario="whale" onclick="toggleScenario(this)">
+              <div class="scenario-card panel panel--hairline" data-scenario="whale" onclick="runScenario(this)">
                 <div class="scenario-icon risk">&#x26A0;</div>
                 <h3>Whale exits</h3>
-                <p>~5M RSC withdrawn and sold. Pool drops to ~6.2M.</p>
+                <p id="scenario-desc-whale">Largest holder exits. Click to simulate.</p>
                 <span class="scenario-tag">High impact</span>
               </div>
-              <div class="scenario-card panel panel--hairline" data-scenario="foundation" onclick="toggleScenario(this)">
+              <div class="scenario-card panel panel--hairline" data-scenario="foundation" onclick="runScenario(this)">
                 <div class="scenario-icon risk">&#x1F30A;</div>
                 <h3>Foundation floods</h3>
-                <p>Treasury RSC hits market. Pool drops to ~4.8M.</p>
+                <p id="scenario-desc-foundation">50M RSC deposited. Click to simulate.</p>
                 <span class="scenario-tag">High impact</span>
               </div>
-              <div class="scenario-card panel panel--hairline" data-scenario="cascade" onclick="toggleScenario(this)">
+              <div class="scenario-card panel panel--hairline" data-scenario="cascade" onclick="runScenario(this)">
                 <div class="scenario-icon loop">&#x1F503;</div>
                 <h3>Cascade exit</h3>
-                <p>Feedback loop. Pool drops to ~2.1M (death spiral).</p>
-                <span class="scenario-tag">Loop 4</span>
+                <p id="scenario-desc-cascade">All yield seekers below threshold exit. Click to simulate.</p>
+                <span class="scenario-tag">Loop risk</span>
               </div>
               <div class="scenario-card panel panel--hairline" data-scenario="growth" onclick="toggleScenario(this)">
                 <div class="scenario-icon growth">&#x2197;</div>
@@ -950,6 +950,7 @@
   </div>
 
   <script>
+    // ── Tab switching ──
     function switchTab(panel) {
       document.querySelectorAll('.tabbar__tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -957,6 +958,63 @@
       document.getElementById(`panel-${panel}`).classList.add('active');
     }
 
+    // ── Formatting helpers ──
+    function fmtRsc(n) {
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
+      return n.toFixed(0);
+    }
+    function fmtPct(n) { return (n * 100).toFixed(1); }
+
+    // ── Fetch model status and update KPIs ──
+    async function refreshStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const d = await res.json();
+
+        // Livebar
+        const el = id => document.getElementById(id);
+        el('live-pool').textContent = fmtRsc(d.total_staked) + ' RSC';
+        el('live-participation').textContent = fmtPct(d.participation_rate) + '%';
+        el('live-apy').textContent = fmtPct(d.apy) + '% APY';
+
+        // KPI cards
+        el('kpi-pool').textContent = (d.total_staked / 1e6).toFixed(1);
+        el('kpi-participation').textContent = fmtPct(d.participation_rate);
+        el('kpi-apy').textContent = fmtPct(d.apy);
+
+        // Health indicators
+        el('health-holders').textContent = d.active_holders;
+        el('ctx-holders').textContent = 'Holders: ' + d.active_holders;
+        el('ctx-emission').textContent = 'Emission: ' + fmtRsc(d.weekly_emission) + '/wk';
+
+        // Health dot colors based on model health
+        const dotClass = d.health_color === 'green' ? 'green' : d.health_color === 'amber' ? 'amber' : 'red';
+        el('health-dot-balance').className = 'health-dot ' + dotClass;
+        el('health-balance').textContent = d.health_color === 'green' ? 'Active' : d.health_color === 'amber' ? 'Slowing' : 'Stressed';
+
+        // APY trend
+        if (d.apy > 0.20) {
+          el('kpi-apy-trend').innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg> compressing (healthy)';
+          el('kpi-apy-trend').className = 'kpi-trend model-derived';
+        } else if (d.apy > 0.05) {
+          el('kpi-apy-trend').innerHTML = 'stabilizing';
+          el('kpi-apy-trend').className = 'kpi-trend context';
+        } else {
+          el('kpi-apy-trend').innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg> low yield';
+          el('kpi-apy-trend').className = 'kpi-trend down';
+        }
+
+        // Step/year in footer
+        if (d.step > 0) {
+          el('ctx-circ').textContent = 'Week ' + d.step + ' · Year ' + d.year;
+        }
+      } catch (e) {
+        console.warn('Status fetch failed:', e);
+      }
+    }
+
+    // ── Scenario SVG overlays (static paths, kept for growth) ──
     const scenarios = {
       whale:      { label: '~6.2M (whale exit)', endY: 168, color: 'neg' },
       foundation: { label: '~4.8M (foundation flood)', endY: 175, color: 'neg' },
@@ -970,19 +1028,9 @@
       const id = el.dataset.scenario;
       const wasActive = el.classList.contains('active');
 
-      // Clear all
-      document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.scenario-path').forEach(p => p.style.display = 'none');
-      document.querySelectorAll('[id^="dot-"]').forEach(d => d.style.display = 'none');
-      document.getElementById('scenario-legend').style.display = 'none';
-      document.getElementById('scenario-annotation').style.display = 'none';
+      clearScenarioUI();
+      if (wasActive) { activeScenario = null; return; }
 
-      if (wasActive) {
-        activeScenario = null;
-        return;
-      }
-
-      // Activate selected
       el.classList.add('active');
       activeScenario = id;
 
@@ -993,21 +1041,132 @@
       const annotation = document.getElementById('scenario-annotation');
       const info = scenarios[id];
 
-      path.style.display = 'block';
-      dot.style.display = 'block';
-      legend.style.display = 'flex';
-      legendLabel.textContent = info.color === 'neg' ? 'Stress path' : 'Growth path';
-
-      annotation.style.display = 'block';
-      annotation.textContent = info.label;
-      annotation.style.color = info.color === 'neg' ? 'var(--neg)' : 'var(--pos)';
-      annotation.style.background = info.color === 'neg' ? 'var(--neg-soft)' : 'var(--pos-soft)';
-      annotation.style.borderColor = info.color === 'neg' ? 'rgba(184,74,61,0.2)' : 'rgba(15,118,110,0.2)';
-
-      // Position annotation near endpoint
-      const topPos = Math.max(10, Math.min(160, info.endY - 20));
-      annotation.style.top = topPos + 'px';
+      if (path) path.style.display = 'block';
+      if (dot) dot.style.display = 'block';
+      if (legend) { legend.style.display = 'flex'; legendLabel.textContent = info.color === 'neg' ? 'Stress path' : 'Growth path'; }
+      if (annotation) {
+        annotation.style.display = 'block';
+        annotation.textContent = info.label;
+        annotation.style.color = info.color === 'neg' ? 'var(--neg)' : 'var(--pos)';
+        annotation.style.background = info.color === 'neg' ? 'var(--neg-soft)' : 'var(--pos-soft)';
+        annotation.style.borderColor = info.color === 'neg' ? 'rgba(184,74,61,0.2)' : 'rgba(15,118,110,0.2)';
+        annotation.style.top = Math.max(10, Math.min(160, info.endY - 20)) + 'px';
+      }
     }
+
+    function clearScenarioUI() {
+      document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.scenario-path').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('[id^="dot-"]').forEach(d => d.style.display = 'none');
+      const legend = document.getElementById('scenario-legend');
+      const annotation = document.getElementById('scenario-annotation');
+      if (legend) legend.style.display = 'none';
+      if (annotation) annotation.style.display = 'none';
+    }
+
+    // ── Live scenario simulation ──
+    const SCENARIO_MAP = {
+      whale: 'whale_exit',
+      foundation: 'foundation_flood',
+      cascade: 'cascade_exit',
+    };
+
+    async function runScenario(el) {
+      const id = el.dataset.scenario;
+      const wasActive = el.classList.contains('active');
+
+      clearScenarioUI();
+      if (wasActive) { activeScenario = null; return; }
+
+      el.classList.add('active');
+      activeScenario = id;
+      const descEl = document.getElementById('scenario-desc-' + id);
+      if (descEl) descEl.textContent = 'Running simulation...';
+
+      try {
+        const scenarioName = SCENARIO_MAP[id];
+        await fetch('/api/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            num_holders: 100,
+            initial_participation_rate: 0.30,
+            seed: 42,
+            scenario: { name: scenarioName, trigger_step: 13 },
+          }),
+        });
+
+        // Run 26 weeks (6 months) to see scenario impact
+        const runRes = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ steps: 26 }),
+        });
+        const data = await runRes.json();
+        const m = data.model;
+
+        const poolAfter = fmtRsc(m.total_rsc_held);
+        const apyAfter = fmtPct(m.current_apy);
+        const active = m.active_holders;
+
+        if (descEl) {
+          descEl.textContent = `Pool: ${poolAfter} RSC · APY: ${apyAfter}% · ${active} holders after 26 wks`;
+        }
+
+        // Update the sim annotation
+        const annotation = document.getElementById('scenario-annotation');
+        const legend = document.getElementById('scenario-legend');
+        const legendLabel = document.getElementById('scenario-legend-label');
+        if (annotation) {
+          annotation.style.display = 'block';
+          annotation.textContent = poolAfter + ' RSC (' + id + ')';
+          annotation.style.color = 'var(--neg)';
+          annotation.style.background = 'var(--neg-soft)';
+          annotation.style.borderColor = 'rgba(184,74,61,0.2)';
+          annotation.style.top = '120px';
+        }
+        if (legend) {
+          legend.style.display = 'flex';
+          legendLabel.textContent = 'Stress result (26 wks)';
+        }
+
+        // Show the static SVG path as a visual hint
+        const path = document.getElementById('path-' + id);
+        const dot = document.getElementById('dot-' + id);
+        if (path) path.style.display = 'block';
+        if (dot) dot.style.display = 'block';
+
+        // Re-init baseline model after scenario display
+        await fetch('/api/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ num_holders: 100, initial_participation_rate: 0.30, seed: 42 }),
+        });
+      } catch (e) {
+        console.warn('Scenario run failed:', e);
+        if (descEl) descEl.textContent = 'Simulation failed. Check server.';
+      }
+    }
+
+    // ── Init: start model and populate KPIs ──
+    async function init() {
+      try {
+        await fetch('/api/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            num_holders: 100,
+            initial_participation_rate: 0.30,
+            seed: 42,
+          }),
+        });
+        await refreshStatus();
+      } catch (e) {
+        console.warn('Init failed — server may not be running:', e);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>

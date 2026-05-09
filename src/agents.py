@@ -139,20 +139,23 @@ class EndowmentHolder(Agent):
         """
         Earn credits this week based on dilution-based yield.
 
-        Formula: weekly_emission x (my_effective_rsc / total_effective_rsc) x nothing_more
-        (multiplier is already baked into my_effective_rsc)
-
-        Uses effective_total_rsc (all holders' RSC weighted by multiplier) so that
-        higher multipliers expand your share relative to others.
+        Default: simple dilution — yield = emissions × (my_rsc / total_rsc).
+        With time_weight_enabled: weighted by multiplier tiers (Design Lab).
         """
         weekly_emission = self.model.weekly_emission()
-        effective_total = self.model.total_effective_rsc
 
-        if effective_total <= 0:
-            return 0.0
+        if self.model.time_weight_enabled:
+            effective_total = self.model.total_effective_rsc
+            if effective_total <= 0:
+                return 0.0
+            my_effective_rsc = self.rsc_held * self._time_weight_multiplier()
+            my_share = my_effective_rsc / effective_total
+        else:
+            total_rsc = self.model.total_rsc_held
+            if total_rsc <= 0:
+                return 0.0
+            my_share = self.rsc_held / total_rsc
 
-        my_effective_rsc = self.rsc_held * self._time_weight_multiplier()
-        my_share = my_effective_rsc / effective_total
         new_credits = weekly_emission * my_share
 
         self.credits += new_credits
@@ -219,8 +222,12 @@ class EndowmentHolder(Agent):
             return False
         base_prob = self.engagement * 0.6
         # Accumulation pressure
-        effective_total = max(self.model.total_effective_rsc, 1)
-        my_eff = self.rsc_held * self._time_weight_multiplier()
+        if self.model.time_weight_enabled:
+            effective_total = max(self.model.total_effective_rsc, 1)
+            my_eff = self.rsc_held * self._time_weight_multiplier()
+        else:
+            effective_total = max(self.model.total_rsc_held, 1)
+            my_eff = self.rsc_held
         weekly_rate = max(self.model.weekly_emission() * (my_eff / effective_total), 1)
         accumulation_ratio = self.credits / (weekly_rate * 4)
         pressure = 1 / (1 + math.exp(-2 * (accumulation_ratio - 1)))
@@ -253,16 +260,13 @@ class EndowmentHolder(Agent):
         return self.credits * frac
 
     def deploy_credits(self, proposal, amount: float) -> float:
-        """Deploy credits to a proposal. Returns RSC burned."""
+        """Deploy credits to a proposal. Returns RSC burned (0 unless burn_on_deploy)."""
         if amount > self.credits:
             amount = self.credits
         if amount <= 0:
             return 0
 
-        # 2% burn on proportional RSC
-        credit_ratio = amount / max(self.credits, 1)
-        rsc_backing = self.rsc_held * credit_ratio * self.model.burn_rate
-
+        pre_credits = self.credits
         self.credits -= amount
         self.total_deployed += amount
 
@@ -278,9 +282,13 @@ class EndowmentHolder(Agent):
                     self.credit_batches[0] = (step_created, batch_amount - remaining)
                     remaining = 0
 
-        burn_amount = min(rsc_backing, self.rsc_held * 0.1)
-        self.rsc_held -= burn_amount
-        self.total_burned += burn_amount
+        burn_amount = 0.0
+        if self.model.burn_on_deploy and self.model.burn_rate > 0:
+            credit_ratio = amount / max(pre_credits, 1)
+            rsc_backing = self.rsc_held * credit_ratio * self.model.burn_rate
+            burn_amount = min(rsc_backing, self.rsc_held * 0.1)
+            self.rsc_held -= burn_amount
+            self.total_burned += burn_amount
 
         self.deployments.append({
             "step": self.model.step_count,

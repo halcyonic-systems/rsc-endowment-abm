@@ -2,7 +2,7 @@
 RSC Decentralized Endowment ABM
 
 Real mechanism: RSC in RH account auto-earns yield (passive).
-Yield = (your RSC / total RH RSC) x annual_emissions x time_weight_multiplier
+Yield = (your RSC / total RH RSC) x annual_emissions
 Emissions decay: E(t) = 9,500,000 / 2^(t/64)
 """
 
@@ -14,11 +14,12 @@ from .constants import (
     get_time_weight_multiplier, list_multipliers,
     get_archetype, list_archetypes,
 )
+from .scenarios import list_scenarios, build_scenario, SCENARIOS
 
 __all__ = [
     "EndowmentModel",
     "EndowmentHolder",
-    "EndowmentStaker",  # legacy alias
+    "EndowmentStaker",
     "EndowmentProposal",
     "TIME_WEIGHT_MULTIPLIERS",
     "EMISSION_PARAMS",
@@ -29,4 +30,7 @@ __all__ = [
     "list_multipliers",
     "get_archetype",
     "list_archetypes",
+    "list_scenarios",
+    "build_scenario",
+    "SCENARIOS",
 ]

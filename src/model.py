@@ -23,16 +23,19 @@ from .constants import (
 
 class EndowmentModel(Model):
     """
-    RSC Decentralized Endowment Model (Redesigned to match RH's actual 2026 plan)
+    RSC Decentralized Endowment Model
 
-    Mechanics:
+    Mechanics (matching real mechanism as of April 2026):
     1. RSC held in RH account auto-earns yield (passive, no staking action)
-    2. Yield = (your_rsc / total_rsc) x annual_emission x time_weight_multiplier
+    2. Yield = (your_rsc / total_rsc) × annual_emission (simple dilution)
     3. Emissions decay: E(t) = 9,500,000 / 2^(t/64)
-    4. Time-weight multipliers: 1.0x (new), 1.15x (holder >4wk), 1.20x (long-term >1yr)
-    5. Agents exit when APY falls below their personal yield_threshold
-    6. New Yield Seekers enter when APY rises above threshold (self-balancing)
-    7. Agents deploy credits to fund proposals -> 2% burn
+    4. Agents exit when APY falls below their personal yield_threshold
+    5. New Yield Seekers enter when APY rises above threshold (self-balancing)
+    6. Agents deploy credits to fund proposals (principal stays intact)
+
+    Design Lab toggles (off by default, not in real mechanism):
+    - burn_on_deploy: burn RSC from principal when deploying credits
+    - time_weight_enabled: 1.0x/1.15x/1.20x multipliers on yield share
 
     Primary question: What participation_rate does the market equilibrate to?
     """
@@ -51,9 +54,12 @@ class EndowmentModel(Model):
         initial_participation_rate: float = None,
         seed: int = None,
         # Design Lab params
+        burn_on_deploy: bool = None,
+        time_weight_enabled: bool = None,
         credit_expiry_enabled: bool = False,
         credit_expiry_weeks: int = 8,
         failure_mode: str = "nothing",
+        scenario: dict = None,
         # Legacy compat (ignored, kept to avoid breaking init calls)
         num_stakers: int = None,
         base_apy: float = None,
@@ -84,9 +90,20 @@ class EndowmentModel(Model):
         self.year0_circulating = EMISSION_PARAMS["year0_circulating"]
 
         # Design Lab params
+        self.burn_on_deploy = burn_on_deploy if burn_on_deploy is not None else DEFAULT_PARAMS["burn_on_deploy"]
+        self.time_weight_enabled = time_weight_enabled if time_weight_enabled is not None else DEFAULT_PARAMS["time_weight_enabled"]
         self.credit_expiry_enabled = credit_expiry_enabled
         self.credit_expiry_weeks = credit_expiry_weeks
         self.failure_mode = failure_mode
+
+        # Stress scenario
+        self.scenario = None
+        if scenario:
+            from .scenarios import build_scenario
+            self.scenario = build_scenario(
+                scenario["name"],
+                scenario.get("trigger_step", 10),
+            )
 
         num_proposals = num_proposals or DEFAULT_PARAMS["num_proposals"]
 
@@ -464,6 +481,9 @@ class EndowmentModel(Model):
         """Advance model by one step (1 week)."""
         self.step_count += 1
 
+        if self.scenario and self.step_count == self.scenario.trigger_step:
+            self.scenario.apply(self)
+
         # Reset per-step counters
         self._step_credits_generated = 0.0
         self._step_credits_deployed = 0.0
@@ -581,8 +601,15 @@ class EndowmentModel(Model):
             "credits_deployed_step": round(self._step_credits_deployed, 2),
             "exits_step": self._step_exit_count,
             "entries_step": self._step_entry_count,
+            "scenario": {
+                "name": self.scenario.name,
+                "trigger_step": self.scenario.trigger_step,
+                "description": self.scenario.description,
+            } if self.scenario else None,
             "params": {
                 "burn_rate": self.burn_rate,
+                "burn_on_deploy": self.burn_on_deploy,
+                "time_weight_enabled": self.time_weight_enabled,
                 "success_rate": self.success_rate,
                 "deploy_probability": self.deploy_probability,
                 "funding_target_min": self.funding_target_min,

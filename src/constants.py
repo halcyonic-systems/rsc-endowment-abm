@@ -2,8 +2,9 @@
 Constants for RSC Decentralized Endowment ABM
 
 Real mechanism: RSC in RH account auto-earns yield (no staking action).
-Yield = (your RSC / total RH RSC) × annual emissions × time_weight_multiplier
+Yield = (your RSC / total RH RSC) × annual emissions
 Emissions decay: E(t) = 9,500,000 / 2^(t/64)
+Time-weight multipliers available as Design Lab toggle (not in real mechanism).
 
 Ground truth: docs/rh-reference/
 """
@@ -58,7 +59,7 @@ EMISSION_PARAMS = {
     "half_life_years": 64,              # Halves every 64 years
     "year0_circulating": 134_157_343,  # RSC circulating at simulation start
     "total_supply": 1_000_000_000,     # Hard cap
-    "burn_rate": 0.02,                 # 2% on RH Foundation transactions
+    "burn_rate": 0.0,                  # Default: no burn (real mechanism has none)
 }
 
 
@@ -68,7 +69,9 @@ EMISSION_PARAMS = {
 
 DEFAULT_PARAMS = {
     "num_holders": 100,
-    "burn_rate": 0.02,                  # 2% burn on credit deployment
+    "burn_rate": 0.0,                   # Default: no burn (real mechanism has none)
+    "burn_on_deploy": False,            # Design Lab: enable burn-from-principal
+    "time_weight_enabled": False,       # Design Lab: enable time-weight multipliers
     "success_rate": 0.80,               # 80% proposal completion probability
     "num_proposals": 10,                # Initial open proposals
     "funding_target_min": 1000,         # Minimum credits to fund

@@ -19,6 +19,7 @@ from src import (
     DEFAULT_ARCHETYPE_MIX,
     list_multipliers,
     list_archetypes,
+    list_scenarios,
 )
 
 app = Flask(__name__)
@@ -88,7 +89,7 @@ def api_info():
     """API info."""
     return jsonify({
         "name": "RSC Decentralized Endowment ABM",
-        "description": "RSC in RH account auto-earns yield. Yield = (your RSC / total RSC) x emissions x multiplier.",
+        "description": "RSC in RH account auto-earns yield. Yield = (your RSC / total RSC) x emissions.",
         "primary_question": "What participation rate does the market equilibrate to?",
         "endpoints": {
             "/api/init": "POST - Initialize model with parameters",
@@ -103,6 +104,8 @@ def api_info():
             "/api/multipliers": "GET - List time-weight multipliers",
             "/api/archetypes": "GET - List behavioral archetypes",
             "/api/participation": "GET - Participation rate data + reference scenarios",
+            "/api/status": "GET - Compact KPI summary for v4 dashboard",
+            "/api/scenarios": "GET - List available stress scenarios",
         },
         "status": "ready",
     })
@@ -126,9 +129,12 @@ def api_init():
         "initial_participation_rate": data.get("initial_participation_rate"),
         "seed": data.get("seed"),
         # Design Lab params
+        "burn_on_deploy": data.get("burn_on_deploy"),
+        "time_weight_enabled": data.get("time_weight_enabled"),
         "credit_expiry_enabled": data.get("credit_expiry_enabled"),
         "credit_expiry_weeks": data.get("credit_expiry_weeks"),
         "failure_mode": data.get("failure_mode"),
+        "scenario": data.get("scenario"),
     }
 
     # Remove None values
@@ -280,6 +286,40 @@ def api_defaults():
     })
 
 
+@app.route("/api/status")
+def api_status():
+    """Compact KPI summary for v4 dashboard."""
+    m = get_model()
+    active = len([h for h in m.holders if h.active])
+    apy = m.current_apy()
+
+    if apy > 0.05:
+        health_color = "green"
+    elif apy > 0.02:
+        health_color = "amber"
+    else:
+        health_color = "red"
+
+    return jsonify({
+        "apy": round(apy, 4),
+        "participation_rate": round(m.participation_rate, 4),
+        "total_staked": round(m.total_rsc_held, 0),
+        "active_holders": active,
+        "total_holders": len(m.holders),
+        "health_color": health_color,
+        "step": m.step_count,
+        "year": round(m.step_count / 52, 2),
+        "weekly_emission": round(m.weekly_emission(), 2),
+        "scenario_active": m.scenario.name if m.scenario else None,
+    })
+
+
+@app.route("/api/scenarios")
+def api_scenarios():
+    """List available stress scenarios."""
+    return jsonify(list_scenarios())
+
+
 # ============================================
 # Main
 # ============================================
@@ -291,20 +331,16 @@ if __name__ == "__main__":
     print("RSC Decentralized Endowment ABM Server")
     print("=" * 60)
     print("Mechanism: RSC held in RH account -> passive yield")
-    print("Yield = (your RSC / total RSC) x emissions x multiplier")
+    print("Yield = (your RSC / total RSC) x emissions")
     print("Emissions: E(t) = 9.5M / 2^(t/64)")
     print()
-    print("Primary question: What participation rate equilibrates?")
-    print()
     print("Endpoints:")
-    print("  GET  /                   - Dashboard")
-    print("  POST /api/init           - Initialize model")
-    print("  POST /api/step           - Advance 1 week")
-    print("  POST /api/run            - Run N weeks")
-    print("  GET  /api/state          - Current state")
-    print("  GET  /api/participation  - Participation data + scenarios")
-    print("  GET  /api/multipliers    - Time-weight multipliers")
-    print("  GET  /api/holders        - List holders")
+    print("  GET  /               - v3 Dashboard")
+    print("  GET  /v4             - v4 Observatory")
+    print("  GET  /api/status     - KPI summary")
+    print("  GET  /api/scenarios  - Stress scenarios")
+    print("  POST /api/init       - Initialize model")
+    print("  POST /api/run        - Run N weeks")
     print()
     print("Open http://localhost:5000 in your browser")
     print("=" * 60)
