@@ -148,7 +148,9 @@
       width: 6px; height: 6px; border-radius: 50%;
       background: var(--systemic);
       box-shadow: 0 0 0 3px var(--systemic-soft);
-      animation: pulse 2.5s ease-in-out infinite;
+    }
+    .livebar__dot--static {
+      animation: none;
     }
     @keyframes pulse {
       0%, 100% { box-shadow: 0 0 0 3px var(--systemic-soft); }
@@ -178,6 +180,14 @@
       color: var(--ink-4);
       position: relative;
       transition: color var(--dur) var(--ease);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .tabbar__tab-sub {
+      display: block; width: 100%;
+      font-size: 9.5px; font-weight: 400; letter-spacing: 0.02em;
+      text-transform: none; color: var(--ink-4); margin-top: -2px;
     }
     .tabbar__tab:hover { color: var(--ink-2); }
     .tabbar__tab.active { color: var(--ink); }
@@ -240,8 +250,8 @@
     .doc-section__eyebrow {
       font-family: 'JetBrains Mono', ui-monospace, monospace;
       font-size: 10.5px; letter-spacing: 0.08em;
-      color: var(--systemic); text-transform: uppercase;
-      margin-bottom: 8px; opacity: 0.8;
+      color: var(--predicted); text-transform: uppercase;
+      margin-bottom: 8px; opacity: 0.5;
     }
     .doc-section__title {
       font-family: 'Source Serif 4', Georgia, serif;
@@ -249,7 +259,7 @@
       color: var(--ink); letter-spacing: -0.01em; margin-bottom: 6px;
     }
     .doc-section__desc {
-      font-size: 12.5px; line-height: 1.5;
+      font-size: 13px; line-height: 1.5;
       color: var(--ink-3); margin-bottom: 14px; max-width: 24ch;
     }
     .doc-section__attrs {
@@ -270,7 +280,7 @@
     /* ═══ KPI strip ═══ */
     .kpi-strip { display: grid; grid-template-columns: 1fr; gap: 14px; }
     @media (min-width: 640px) { .kpi-strip { grid-template-columns: repeat(3, 1fr); } }
-    .kpi-card { padding: 22px; }
+    .kpi-card { padding: 22px; position: relative; overflow: hidden; }
     .kpi-card .t-label { margin-bottom: 8px; }
     .kpi-value-row { display: flex; align-items: baseline; gap: 6px; }
     .kpi-unit { font-size: 0.875rem; font-weight: 500; color: var(--ink-3); padding-bottom: 3px; }
@@ -371,6 +381,49 @@
     .health-dot.amber { background: var(--warn); box-shadow: 0 0 0 3px rgba(184, 137, 62, 0.12); }
     .health-value { font-size: 0.875rem; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
 
+    /* ═══ Health grid (v4) ═══ */
+    .health-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 640px) { .health-grid { grid-template-columns: repeat(4, 1fr); } }
+    .health-card {
+      padding: 16px;
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border-crisp);
+      background: var(--bg-elevated);
+    }
+    .health-pill {
+      display: inline-block;
+      font-size: 9px; font-weight: 600; letter-spacing: 0.06em;
+      padding: 2px 7px; border-radius: 3px;
+      margin-bottom: 10px;
+    }
+    .health-pill.green { background: var(--pos-soft); color: var(--pos); }
+    .health-pill.amber { background: rgba(184, 137, 62, 0.12); color: var(--warn); }
+    .health-pill.red { background: var(--neg-soft); color: var(--neg); }
+    .health-card__value { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+    .health-card__label { font-size: 11px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .health-card__why { font-size: 11px; color: var(--ink-3); line-height: 1.4; }
+
+    /* ═══ Untraced callout (§04) ═══ */
+    .untraced-callout {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 14px 18px; margin-bottom: 14px;
+      border-radius: var(--radius-card);
+      border: 1px solid rgba(184, 74, 61, 0.2);
+      background: var(--neg-soft);
+    }
+    .untraced-callout__pct { font-size: 20px; font-weight: 700; color: var(--neg); }
+    .untraced-callout__text { font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
+
+    /* ═══ KPI sparklines ═══ */
+    .kpi-sparkline {
+      position: absolute;
+      right: 16px; bottom: 40px;
+      width: 60px; height: 24px;
+      opacity: 0.08;
+      color: var(--ink);
+      pointer-events: none;
+    }
+
     /* ═══ Activity feed ═══ */
     .feed-item {
       display: grid; grid-template-columns: 26px 1fr auto;
@@ -446,18 +499,15 @@
 
   <!-- ═══ LIVEBAR ═══ -->
   <div class="livebar">
-    <div class="livebar__dot"></div>
-    <span class="livebar__label">LIVE</span>
+    <div class="livebar__dot livebar__dot--static"></div>
+    <span class="livebar__label">SNAPSHOT</span>
     <span class="rule"></span>
     <span>Block <span class="mono">21,438,221</span></span>
     <span class="rule"></span>
-    <span>synced 2h ago</span>
+    <span id="live-freshness">updated just now</span>
+    <span style="cursor: pointer; margin-left: 2px; font-size: 13px; color: var(--ink-3);" onclick="fetch('/api/chain/snapshot',{method:'POST'}).then(()=>refreshStatus())" title="Refresh snapshot">&#x21BB;</span>
     <span class="livebar__push"></span>
-    <span class="mono" id="live-pool">11.2M RSC</span>
-    <span class="rule"></span>
-    <span class="mono" id="live-participation">5.1%</span>
-    <span class="rule"></span>
-    <span class="mono gold" id="live-apy">84% APY</span>
+    <span class="mono" id="live-northstar">11.2M RSC</span>
   </div>
 
   <div class="page">
@@ -472,16 +522,21 @@
         <span>Launched Apr 10, 2026</span>
         <span class="rule"></span>
         <span class="page-header__badge">MODEL v0.4.2</span>
+        <button class="page-header__badge" onclick="shareSnapshot()" style="cursor: pointer; border-color: var(--border-blue); background: var(--bg-tint-blue); color: var(--predicted);">SHARE SNAPSHOT</button>
       </div>
     </header>
 
     <!-- ═══ TAB BAR ═══ -->
     <nav class="tabbar">
       <button class="tabbar__tab active" data-panel="tracker" onclick="switchTab('tracker')">
-        Tracker<span class="tab-dot"></span>
+        <span class="tabbar__tab-label">Tracker</span>
+        <span class="tab-dot" id="tab-dot-tracker"></span>
+        <span class="tabbar__tab-sub">on-chain state</span>
       </button>
       <button class="tabbar__tab" data-panel="simulation" onclick="switchTab('simulation')">
-        Simulation<span class="tab-dot"></span>
+        <span class="tabbar__tab-label">Simulation</span>
+        <span class="tab-dot" id="tab-dot-sim"></span>
+        <span class="tabbar__tab-sub">model forecast</span>
       </button>
     </nav>
 
@@ -516,6 +571,9 @@
                   <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg>
                   +34% this week
                 </div>
+                <svg class="kpi-sparkline" viewBox="0 0 60 24" preserveAspectRatio="none">
+                  <polyline points="0,22 10,20 20,18 30,14 40,10 50,6 60,4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
               </div>
               <div class="kpi-card panel panel--elevated panel--observed">
                 <div class="t-label">Participation</div>
@@ -527,6 +585,9 @@
                   <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg>
                   from 0.38% at launch
                 </div>
+                <svg class="kpi-sparkline" viewBox="0 0 60 24" preserveAspectRatio="none">
+                  <polyline points="0,23 10,22 20,20 30,16 40,12 50,8 60,5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
               </div>
               <div class="kpi-card panel panel--elevated panel--observed">
                 <div class="t-label">Credit APY</div>
@@ -538,6 +599,9 @@
                   <svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg>
                   compressing (healthy)
                 </div>
+                <svg class="kpi-sparkline" viewBox="0 0 60 24" preserveAspectRatio="none">
+                  <polyline points="0,2 10,4 20,8 30,12 40,16 50,18 60,20" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
               </div>
             </div>
             <div class="context-strip">
@@ -557,31 +621,30 @@
             <p class="doc-section__desc">Structural risk indicators from on-chain state.</p>
           </header>
           <div class="doc-section__body">
-            <div class="health-strip">
-              <div class="health-item">
-                <div class="health-dot teal" id="health-dot-concentration"></div>
-                <div class="health-value t-mono" id="health-concentration">—</div>
-                <div class="t-caption">Concentration</div>
+            <div class="health-grid">
+              <div class="health-card" id="hcard-concentration">
+                <div class="health-pill amber">WATCH</div>
+                <div class="health-card__value t-mono" id="health-concentration">—</div>
+                <div class="health-card__label">Concentration</div>
+                <div class="health-card__why" id="health-concentration-why">Foundation holds 47% of supply</div>
               </div>
-              <div class="health-item">
-                <div class="health-dot amber" id="health-dot-divergence"></div>
-                <div class="health-value t-mono" id="health-divergence">—</div>
-                <div class="t-caption">Model fit</div>
+              <div class="health-card" id="hcard-balance">
+                <div class="health-pill green">HEALTHY</div>
+                <div class="health-card__value t-mono" id="health-balance">Active</div>
+                <div class="health-card__label">Self-balancing</div>
+                <div class="health-card__why" id="health-balance-why">APY attracting new entrants</div>
               </div>
-              <div class="health-item">
-                <div class="health-dot teal" id="health-dot-balance"></div>
-                <div class="health-value t-mono" id="health-balance">Active</div>
-                <div class="t-caption">Self-balancing</div>
+              <div class="health-card" id="hcard-divergence">
+                <div class="health-pill amber">WATCH</div>
+                <div class="health-card__value t-mono" id="health-divergence">—</div>
+                <div class="health-card__label">Model fit</div>
+                <div class="health-card__why" id="health-divergence-why">Model predicted 30% participation</div>
               </div>
-              <div class="health-item">
-                <div class="health-dot amber" id="health-dot-holders"></div>
-                <div class="health-value t-mono" id="health-holders">—</div>
-                <div class="t-caption">Holders</div>
-              </div>
-              <div class="health-item">
-                <div class="health-dot green" id="health-dot-exits"></div>
-                <div class="health-value t-mono" id="health-exits">0</div>
-                <div class="t-caption">Exits (7d)</div>
+              <div class="health-card" id="hcard-holders">
+                <div class="health-pill green">OK</div>
+                <div class="health-card__value t-mono" id="health-holders">—</div>
+                <div class="health-card__label">Tracked wallets</div>
+                <div class="health-card__why" id="health-holders-why">Across hot wallet + second wallet</div>
               </div>
             </div>
           </div>
@@ -641,7 +704,11 @@
             </dl>
           </header>
           <div class="doc-section__body panel--observed-rule" style="padding-left: 14px; overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'JetBrains Mono', monospace;">
+            <div class="untraced-callout">
+              <span class="untraced-callout__pct t-mono">~39%</span>
+              <span class="untraced-callout__text">of pool flows through unidentified collection infrastructure — <a href="#depositor-table" style="color: var(--predicted);">see breakdown below</a></span>
+            </div>
+            <table id="depositor-table" style="width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'JetBrains Mono', monospace;">
               <thead>
                 <tr style="border-bottom: 1px solid var(--border-crisp); text-align: left;">
                   <th style="padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-4);">Entity</th>
@@ -725,8 +792,24 @@
           </header>
           <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
             <div style="display: grid; gap: 12px;">
-              <!-- Watch card 1: Foundation Treasury -->
-              <div class="panel panel--elevated treasury-card" data-label="foundation_treasury" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+              <!-- Watch card 1: Foundation Community (MONITOR — highest risk) -->
+              <div class="panel panel--elevated treasury-card" data-label="foundation_community" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; border-left: 3px solid var(--warn);">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600;">Foundation Community</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: rgba(184, 137, 62, 0.12); color: var(--warn); font-weight: 500;">MONITOR</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    0xc4cf...f81e3 &middot; Primary sell-side supply source. Disbursements are impulse shocks to thin order books.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono treasury-value" style="font-size: 16px; font-weight: 700;">5.09M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+              <!-- Watch card 2: Foundation Treasury (DORMANT) -->
+              <div class="panel panel--elevated treasury-card" data-label="foundation_treasury" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; border-left: 3px solid var(--border-crisp);">
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                     <span style="font-size: 12px; font-weight: 600;">Foundation Treasury</span>
@@ -741,8 +824,8 @@
                   <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
                 </div>
               </div>
-              <!-- Watch card 2: Team Treasury -->
-              <div class="panel panel--elevated treasury-card" data-label="team_treasury" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+              <!-- Watch card 3: Team Treasury (DORMANT) -->
+              <div class="panel panel--elevated treasury-card" data-label="team_treasury" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; border-left: 3px solid var(--border-crisp);">
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                     <span style="font-size: 12px; font-weight: 600;">Team Treasury</span>
@@ -754,22 +837,6 @@
                 </div>
                 <div style="text-align: right;">
                   <div class="t-mono treasury-value" style="font-size: 16px; font-weight: 700;">297.8M</div>
-                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
-                </div>
-              </div>
-              <!-- Watch card 3: Foundation Community -->
-              <div class="panel panel--elevated treasury-card" data-label="foundation_community" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
-                <div>
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 600;">Foundation Community</span>
-                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: rgba(184, 137, 62, 0.12); color: var(--warn); font-weight: 500;">MONITOR</span>
-                  </div>
-                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
-                    0xc4cf...f81e3 &middot; Primary sell-side supply source. Disbursements are impulse shocks to thin order books.
-                  </div>
-                </div>
-                <div style="text-align: right;">
-                  <div class="t-mono treasury-value" style="font-size: 16px; font-weight: 700;">5.09M</div>
                   <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
                 </div>
               </div>
@@ -786,7 +853,7 @@
           </header>
           <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
             <div class="feed-item">
-              <div class="feed-icon">+</div>
+              <div class="feed-icon" style="background: var(--pos-soft); color: var(--pos);">&#x2193;</div>
               <div class="feed-body">
                 <p><strong>Foundation deposited 769K RSC</strong></p>
                 <div class="sub">From treasury &middot; strongest alignment signal to date</div>
@@ -794,7 +861,7 @@
               <div class="feed-time">Apr 16</div>
             </div>
             <div class="feed-item">
-              <div class="feed-icon">+</div>
+              <div class="feed-icon" style="background: var(--pos-soft); color: var(--pos);">&#x2193;</div>
               <div class="feed-body">
                 <p><strong>New depositor: 1.29M RSC</strong></p>
                 <div class="sub">Unknown wallet &middot; received from Foundation Community</div>
@@ -802,7 +869,7 @@
               <div class="feed-time">Apr 23</div>
             </div>
             <div class="feed-item">
-              <div class="feed-icon">&rarr;</div>
+              <div class="feed-icon" style="background: var(--systemic-soft); color: var(--systemic);">&#x25CE;</div>
               <div class="feed-body">
                 <p><strong>Daily emission: 26,027 credits</strong></p>
                 <div class="sub">Split across ~15 depositors proportionally</div>
@@ -810,7 +877,7 @@
               <div class="feed-time">Today</div>
             </div>
             <div class="feed-item">
-              <div class="feed-icon">+</div>
+              <div class="feed-icon" style="background: var(--predicted-soft); color: var(--predicted);">&#x2605;</div>
               <div class="feed-body">
                 <p><strong>Endowment launched</strong></p>
                 <div class="sub">First deposits received &middot; mechanism live on Base L2</div>
@@ -955,6 +1022,16 @@
   </div>
 
   <script>
+    // ── Share snapshot ──
+    function shareSnapshot() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = event.target;
+        btn.textContent = 'COPIED';
+        setTimeout(() => { btn.textContent = 'SHARE SNAPSHOT'; }, 1500);
+      });
+    }
+
     // ── Tab switching ──
     function switchTab(panel) {
       document.querySelectorAll('.tabbar__tab').forEach(t => t.classList.remove('active'));
@@ -970,6 +1047,17 @@
       return n.toFixed(0);
     }
     function fmtPct(n) { return (n * 100).toFixed(1); }
+
+    // ── Health pill updater ──
+    function setHealthPill(cardId, level, label) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      const pill = card.querySelector('.health-pill');
+      if (pill) {
+        pill.className = 'health-pill ' + level;
+        pill.textContent = label;
+      }
+    }
 
     // ── Fetch chain data + model status and update KPIs ──
     const CIRCULATING_SUPPLY = 134_157_343;
@@ -989,10 +1077,8 @@
           const annualEmission = 9_500_000;
           const realApy = poolRsc > 0 ? annualEmission / poolRsc : 0;
 
-          // Livebar — real data
-          el('live-pool').textContent = fmtRsc(poolRsc) + ' RSC';
-          el('live-participation').textContent = fmtPct(participation) + '%';
-          el('live-apy').textContent = fmtPct(realApy) + '% APY';
+          // Livebar — north star metric
+          el('live-northstar').textContent = fmtRsc(poolRsc) + ' RSC';
 
           // KPI cards — real data
           if (poolRsc >= 1e6) {
@@ -1013,7 +1099,7 @@
           const ts = chain.pool.timestamp;
           if (ts) {
             const ago = timeSince(ts);
-            document.querySelector('.livebar span:nth-child(4)').textContent = 'updated ' + ago;
+            el('live-freshness').textContent = 'updated ' + ago;
           }
 
           // APY trend
@@ -1040,9 +1126,12 @@
           el('health-holders').textContent = '~' + (chain.treasury ? chain.treasury.length + 1 : '?');
           el('ctx-holders').textContent = 'Depositors: tracked';
 
-          const healthColor = realApy > 0.10 ? 'green' : realApy > 0.03 ? 'amber' : 'red';
-          el('health-dot-balance').className = 'health-dot ' + healthColor;
-          el('health-balance').textContent = healthColor === 'green' ? 'Active' : healthColor === 'amber' ? 'Slowing' : 'Stressed';
+          // Self-balancing health card
+          const healthLevel = realApy > 0.10 ? 'green' : realApy > 0.03 ? 'amber' : 'red';
+          const healthLabel = healthLevel === 'green' ? 'HEALTHY' : healthLevel === 'amber' ? 'WATCH' : 'RISK';
+          setHealthPill('hcard-balance', healthLevel, healthLabel);
+          el('health-balance').textContent = healthLevel === 'green' ? 'Active' : healthLevel === 'amber' ? 'Slowing' : 'Stressed';
+          el('health-balance-why').textContent = healthLevel === 'green' ? 'APY attracting new entrants' : healthLevel === 'amber' ? 'APY compression slowing entries' : 'Low yield may trigger exits';
         }
 
         // Fetch health analytics (HHI, model vs reality)
@@ -1052,15 +1141,19 @@
           // Concentration HHI
           const conc = health.concentration;
           el('health-concentration').textContent = conc.hhi_label;
-          const concDot = conc.hhi > 0.25 ? 'red' : conc.hhi > 0.15 ? 'amber' : 'teal';
-          el('health-dot-concentration').className = 'health-dot ' + concDot;
+          const concLevel = conc.hhi > 0.25 ? 'red' : conc.hhi > 0.15 ? 'amber' : 'green';
+          const concLabel = conc.hhi > 0.25 ? 'RISK' : conc.hhi > 0.15 ? 'WATCH' : 'OK';
+          setHealthPill('hcard-concentration', concLevel, concLabel);
+          el('health-concentration-why').textContent = 'HHI ' + conc.hhi.toFixed(2) + ' — foundation holds ' + (conc.foundation_pct * 100).toFixed(0) + '%';
 
           // Model vs Reality divergence
           const mvr = health.model_vs_reality;
           const divPct = Math.abs(mvr.divergence_participation * 100).toFixed(0);
           el('health-divergence').textContent = divPct + '% off';
-          const divDot = Math.abs(mvr.divergence_participation) > 0.15 ? 'red' : Math.abs(mvr.divergence_participation) > 0.05 ? 'amber' : 'green';
-          el('health-dot-divergence').className = 'health-dot ' + divDot;
+          const divLevel = Math.abs(mvr.divergence_participation) > 0.15 ? 'red' : Math.abs(mvr.divergence_participation) > 0.05 ? 'amber' : 'green';
+          const divLabel = divLevel === 'green' ? 'OK' : divLevel === 'amber' ? 'WATCH' : 'RISK';
+          setHealthPill('hcard-divergence', divLevel, divLabel);
+          el('health-divergence-why').textContent = 'Predicted ' + (mvr.model_predicted_participation * 100).toFixed(0) + '%, actual ' + (mvr.actual_participation * 100).toFixed(1) + '%';
         }
       } catch (e) {
         console.warn('Chain data fetch failed, falling back to model:', e);
@@ -1073,9 +1166,7 @@
       try {
         const res = await fetch('/api/status');
         const d = await res.json();
-        el('live-pool').textContent = fmtRsc(d.total_staked) + ' RSC';
-        el('live-participation').textContent = fmtPct(d.participation_rate) + '%';
-        el('live-apy').textContent = fmtPct(d.apy) + '% APY';
+        el('live-northstar').textContent = fmtRsc(d.total_staked) + ' RSC';
         el('kpi-pool').textContent = (d.total_staked / 1e6).toFixed(1);
         el('kpi-participation').textContent = fmtPct(d.participation_rate);
         el('kpi-apy').textContent = fmtPct(d.apy);
