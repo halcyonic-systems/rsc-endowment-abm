@@ -10,7 +10,10 @@ import json
 import os
 from datetime import datetime
 
-DEFAULT_DB = os.path.join(os.path.dirname(__file__), "..", "..", "data", "endowment.db")
+_volume = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH")
+DEFAULT_DB = os.path.join(_volume, "endowment.db") if _volume else os.path.join(
+    os.path.dirname(__file__), "..", "..", "data", "endowment.db"
+)
 
 
 class DataStore:
