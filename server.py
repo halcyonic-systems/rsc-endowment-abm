@@ -472,7 +472,7 @@ def api_chain_health():
             "foundation_rsc": round(foundation_rsc, 0),
             "level": "high" if foundation_pct > 0.40 else "medium" if foundation_pct > 0.20 else "low",
             "hhi": round(hhi, 4),
-            "hhi_label": "monopoly" if hhi > 0.25 else "concentrated" if hhi > 0.15 else "moderate" if hhi > 0.10 else "competitive",
+            "hhi_label": "concentrated" if hhi > 0.25 else "moderate" if hhi > 0.15 else "distributed" if hhi > 0.10 else "competitive",
         },
         "self_balancing": "active" if apy > 0.05 else "slowing" if apy > 0.02 else "stalled",
         "model_vs_reality": {

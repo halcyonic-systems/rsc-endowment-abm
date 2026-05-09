@@ -267,8 +267,8 @@
       gap: 3px 8px; font-size: 10px;
       font-family: 'JetBrains Mono', ui-monospace, monospace;
     }
-    .doc-section__attrs dt { color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; }
-    .doc-section__attrs dd { color: var(--ink-2); }
+    .doc-section__attrs dt { color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+    .doc-section__attrs dd { color: var(--ink-3); }
     .doc-section__body { min-width: 0; }
 
     @media (max-width: 760px) {
@@ -507,6 +507,7 @@
     <span id="live-freshness">updated just now</span>
     <span style="cursor: pointer; margin-left: 2px; font-size: 13px; color: var(--ink-3);" onclick="fetch('/api/chain/snapshot',{method:'POST'}).then(()=>refreshStatus())" title="Refresh snapshot">&#x21BB;</span>
     <span class="livebar__push"></span>
+    <span style="font-size: 10px; letter-spacing: 0.06em; color: var(--ink-4);">POOL</span>
     <span class="mono" id="live-northstar">11.2M RSC</span>
   </div>
 
@@ -522,7 +523,7 @@
         <span>Launched Apr 10, 2026</span>
         <span class="rule"></span>
         <span class="page-header__badge">MODEL v0.4.2</span>
-        <button class="page-header__badge" onclick="shareSnapshot()" style="cursor: pointer; border-color: var(--border-blue); background: var(--bg-tint-blue); color: var(--predicted);">SHARE SNAPSHOT</button>
+        <button onclick="shareSnapshot()" style="cursor: pointer; padding: 3px 10px; border-radius: var(--radius-tag); border: 1.5px solid var(--predicted); background: transparent; color: var(--predicted); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 500; letter-spacing: 0.02em;" id="share-btn">&#x2197; SHARE</button>
       </div>
     </header>
 
@@ -624,27 +625,27 @@
             <div class="health-grid">
               <div class="health-card" id="hcard-concentration">
                 <div class="health-pill amber">WATCH</div>
-                <div class="health-card__value t-mono" id="health-concentration">—</div>
-                <div class="health-card__label">Concentration</div>
-                <div class="health-card__why" id="health-concentration-why">Foundation holds 47% of supply</div>
+                <div class="health-card__value t-mono" id="health-concentration">Concentrated</div>
+                <div class="health-card__label">Supply distribution</div>
+                <div class="health-card__why" id="health-concentration-why">Foundation holds 47% of total supply</div>
               </div>
               <div class="health-card" id="hcard-balance">
                 <div class="health-pill green">HEALTHY</div>
                 <div class="health-card__value t-mono" id="health-balance">Active</div>
                 <div class="health-card__label">Self-balancing</div>
-                <div class="health-card__why" id="health-balance-why">APY attracting new entrants</div>
+                <div class="health-card__why" id="health-balance-why">High APY attracting new entrants</div>
               </div>
               <div class="health-card" id="hcard-divergence">
                 <div class="health-pill amber">WATCH</div>
-                <div class="health-card__value t-mono" id="health-divergence">—</div>
+                <div class="health-card__value t-mono" id="health-divergence">Drifting</div>
                 <div class="health-card__label">Model fit</div>
-                <div class="health-card__why" id="health-divergence-why">Model predicted 30% participation</div>
+                <div class="health-card__why" id="health-divergence-why">Predicted 30%, actual 6.3%</div>
               </div>
               <div class="health-card" id="hcard-holders">
                 <div class="health-pill green">OK</div>
-                <div class="health-card__value t-mono" id="health-holders">—</div>
-                <div class="health-card__label">Tracked wallets</div>
-                <div class="health-card__why" id="health-holders-why">Across hot wallet + second wallet</div>
+                <div class="health-card__value t-mono" id="health-holders">Tracked</div>
+                <div class="health-card__label">Depositors</div>
+                <div class="health-card__why" id="health-holders-why">Hot wallet + second wallet monitored</div>
               </div>
             </div>
           </div>
@@ -792,7 +793,23 @@
           </header>
           <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
             <div style="display: grid; gap: 12px;">
-              <!-- Watch card 1: Foundation Community (MONITOR — highest risk) -->
+              <!-- Watch card 0: 0x3e3f disbursement wallet (HIGH RISK) -->
+              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; border-left: 3px solid var(--neg);">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600; font-family: 'JetBrains Mono', monospace;">0x3e3f...7161</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--neg-soft); color: var(--neg); font-weight: 500;">HIGH RISK</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    Holding ~1.3M RSC from Foundation Community disbursement (Apr 23). If sold on exchange: ~40% price impact on current book depth. Currently idle.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono" style="font-size: 16px; font-weight: 700; color: var(--neg);">~1.3M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+              <!-- Watch card 1: Foundation Community (MONITOR) -->
               <div class="panel panel--elevated treasury-card" data-label="foundation_community" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; border-left: 3px solid var(--warn);">
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -1138,19 +1155,21 @@
         const healthRes = await fetch('/api/chain/health');
         const health = await healthRes.json();
         if (health.status === 'ok') {
-          // Concentration HHI
+          // Concentration — state word, not raw HHI label
           const conc = health.concentration;
-          el('health-concentration').textContent = conc.hhi_label;
-          const concLevel = conc.hhi > 0.25 ? 'red' : conc.hhi > 0.15 ? 'amber' : 'green';
-          const concLabel = conc.hhi > 0.25 ? 'RISK' : conc.hhi > 0.15 ? 'WATCH' : 'OK';
+          const concState = conc.hhi > 0.25 ? 'Concentrated' : conc.hhi > 0.15 ? 'Moderate' : 'Distributed';
+          el('health-concentration').textContent = concState;
+          const concLevel = conc.hhi > 0.25 ? 'amber' : conc.hhi > 0.15 ? 'amber' : 'green';
+          const concLabel = conc.hhi > 0.25 ? 'WATCH' : conc.hhi > 0.15 ? 'WATCH' : 'OK';
           setHealthPill('hcard-concentration', concLevel, concLabel);
-          el('health-concentration-why').textContent = 'HHI ' + conc.hhi.toFixed(2) + ' — foundation holds ' + (conc.foundation_pct * 100).toFixed(0) + '%';
+          el('health-concentration-why').textContent = 'Foundation holds ' + (conc.foundation_pct * 100).toFixed(0) + '% of total supply';
 
-          // Model vs Reality divergence
+          // Model fit — state word
           const mvr = health.model_vs_reality;
-          const divPct = Math.abs(mvr.divergence_participation * 100).toFixed(0);
-          el('health-divergence').textContent = divPct + '% off';
-          const divLevel = Math.abs(mvr.divergence_participation) > 0.15 ? 'red' : Math.abs(mvr.divergence_participation) > 0.05 ? 'amber' : 'green';
+          const divAbs = Math.abs(mvr.divergence_participation);
+          const divState = divAbs > 0.15 ? 'Divergent' : divAbs > 0.05 ? 'Drifting' : 'Aligned';
+          el('health-divergence').textContent = divState;
+          const divLevel = divAbs > 0.15 ? 'red' : divAbs > 0.05 ? 'amber' : 'green';
           const divLabel = divLevel === 'green' ? 'OK' : divLevel === 'amber' ? 'WATCH' : 'RISK';
           setHealthPill('hcard-divergence', divLevel, divLabel);
           el('health-divergence-why').textContent = 'Predicted ' + (mvr.model_predicted_participation * 100).toFixed(0) + '%, actual ' + (mvr.actual_participation * 100).toFixed(1) + '%';
