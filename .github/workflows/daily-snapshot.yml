@@ -1,0 +1,33 @@
+name: Daily chain snapshot
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # noon UTC daily
+  workflow_dispatch: {}    # manual trigger
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Take chain snapshot
+        run: |
+          response=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -u ":${{ secrets.DASHBOARD_PASSWORD }}" \
+            https://endowment.halcyonic.systems/api/chain/snapshot)
+
+          http_code=$(echo "$response" | tail -1)
+          body=$(echo "$response" | head -1)
+
+          echo "Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" != "200" ]; then
+            echo "::error::Snapshot failed with status $http_code"
+            exit 1
+          fi
+
+      - name: Verify snapshot persisted
+        run: |
+          curl -s -u ":${{ secrets.DASHBOARD_PASSWORD }}" \
+            https://endowment.halcyonic.systems/api/chain/latest | python3 -m json.tool
