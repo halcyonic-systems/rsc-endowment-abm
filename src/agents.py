@@ -374,6 +374,38 @@ class EndowmentHolder(Agent):
         }
 
 
+class AnchoredHolder(EndowmentHolder):
+    """Agent initialized from real on-chain depositor data."""
+
+    def __init__(self, model, address: str, rsc_held: float,
+                 deposit_date: str = None, chain: str = "base",
+                 archetype: str = None, **kwargs):
+        inferred = archetype or self._infer_archetype(rsc_held)
+        super().__init__(model, rsc_held=int(rsc_held), archetype=inferred, **kwargs)
+        self.address = address
+        self.deposit_date = deposit_date
+        self.chain = chain
+        self.anchored = True
+
+    @staticmethod
+    def _infer_archetype(rsc_held: float) -> str:
+        if rsc_held >= 1_000_000:
+            return "institution"
+        elif rsc_held >= 100_000:
+            return "believer"
+        elif rsc_held >= 10_000:
+            return "yield_seeker"
+        return "speculator"
+
+    def to_dict(self) -> dict:
+        d = super().to_dict()
+        d["address"] = self.address[:6] + "..." + self.address[-4:] if self.address else None
+        d["deposit_date"] = self.deposit_date
+        d["chain"] = self.chain
+        d["anchored"] = True
+        return d
+
+
 # Backward-compat alias
 EndowmentStaker = EndowmentHolder
 

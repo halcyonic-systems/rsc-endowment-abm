@@ -7,7 +7,7 @@ Emissions decay: E(t) = 9,500,000 / 2^(t/64)
 """
 
 from .model import EndowmentModel
-from .agents import EndowmentHolder, EndowmentStaker, EndowmentProposal
+from .agents import EndowmentHolder, EndowmentStaker, EndowmentProposal, AnchoredHolder
 from .constants import (
     TIME_WEIGHT_MULTIPLIERS, EMISSION_PARAMS, DEFAULT_PARAMS,
     ARCHETYPES, DEFAULT_ARCHETYPE_MIX,
@@ -21,6 +21,7 @@ __all__ = [
     "EndowmentHolder",
     "EndowmentStaker",
     "EndowmentProposal",
+    "AnchoredHolder",
     "TIME_WEIGHT_MULTIPLIERS",
     "EMISSION_PARAMS",
     "DEFAULT_PARAMS",

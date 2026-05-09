@@ -720,51 +720,51 @@
           </header>
           <div class="doc-section__body panel--observed-rule" style="padding-left: 14px;">
             <div style="display: grid; gap: 12px;">
-              <!-- Watch card 1 -->
-              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
-                <div>
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 600;">0x3e3f...7161</span>
-                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--neg-soft); color: var(--neg); font-weight: 500;">HIGH RISK</span>
-                  </div>
-                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
-                    Holding 1.29M RSC from Foundation Community disbursement (Apr 23). If sold on exchange: ~40% price impact on current book depth. Currently idle.
-                  </div>
-                </div>
-                <div style="text-align: right;">
-                  <div class="t-mono" style="font-size: 16px; font-weight: 700;">1.71M</div>
-                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
-                </div>
-              </div>
-              <!-- Watch card 2 -->
-              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
-                <div>
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 600;">Foundation Community</span>
-                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: rgba(184, 137, 62, 0.12); color: var(--warn); font-weight: 500;">MONITOR</span>
-                  </div>
-                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
-                    0xc4cf...f81e3 &middot; Primary source of sell-side supply. Monthly contributor pay + ad hoc grants. Each disbursement is an impulse shock to thin order books.
-                  </div>
-                </div>
-                <div style="text-align: right;">
-                  <div class="t-mono" style="font-size: 16px; font-weight: 700;">7.09M</div>
-                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
-                </div>
-              </div>
-              <!-- Watch card 3 -->
-              <div class="panel panel--elevated" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+              <!-- Watch card 1: Foundation Treasury -->
+              <div class="panel panel--elevated treasury-card" data-label="foundation_treasury" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
                 <div>
                   <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                     <span style="font-size: 12px; font-weight: 600;">Foundation Treasury</span>
                     <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--bg-recessed); color: var(--ink-3); font-weight: 500;">DORMANT</span>
                   </div>
                   <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
-                    0x5222...291f1 &middot; 47.4% of total supply. No activity since endowment launch. If even 10% enters endowment, pool 4x overnight.
+                    0x5222...291f1 &middot; 47.4% of total supply. If even 10% enters endowment, pool 4x overnight.
                   </div>
                 </div>
                 <div style="text-align: right;">
-                  <div class="t-mono" style="font-size: 16px; font-weight: 700;">473.7M</div>
+                  <div class="t-mono treasury-value" style="font-size: 16px; font-weight: 700;">473.7M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+              <!-- Watch card 2: Team Treasury -->
+              <div class="panel panel--elevated treasury-card" data-label="team_treasury" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600;">Team Treasury</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: var(--bg-recessed); color: var(--ink-3); font-weight: 500;">DORMANT</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    0xe364...dbe0 &middot; 29.8% of total supply. No endowment activity.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono treasury-value" style="font-size: 16px; font-weight: 700;">297.8M</div>
+                  <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
+                </div>
+              </div>
+              <!-- Watch card 3: Foundation Community -->
+              <div class="panel panel--elevated treasury-card" data-label="foundation_community" style="padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 12px; font-weight: 600;">Foundation Community</span>
+                    <span style="font-size: 9px; padding: 2px 6px; border-radius: 3px; background: rgba(184, 137, 62, 0.12); color: var(--warn); font-weight: 500;">MONITOR</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--ink-3); line-height: 1.5;">
+                    0xc4cf...f81e3 &middot; Primary sell-side supply source. Disbursements are impulse shocks to thin order books.
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div class="t-mono treasury-value" style="font-size: 16px; font-weight: 700;">5.09M</div>
                   <div style="font-size: 10px; color: var(--ink-4);">RSC held</div>
                 </div>
               </div>
@@ -966,52 +966,120 @@
     }
     function fmtPct(n) { return (n * 100).toFixed(1); }
 
-    // ── Fetch model status and update KPIs ──
+    // ── Fetch chain data + model status and update KPIs ──
+    const CIRCULATING_SUPPLY = 134_157_343;
+
     async function refreshStatus() {
+      const el = id => document.getElementById(id);
+
+      // Layer 1: Real chain data (observed)
+      try {
+        const chainRes = await fetch('/api/chain/latest');
+        const chain = await chainRes.json();
+
+        if (chain.status === 'ok' && chain.pool) {
+          const poolRsc = chain.pool.total_rsc;
+          const priceUsd = chain.pool.price_usd || 0;
+          const participation = poolRsc / CIRCULATING_SUPPLY;
+          const annualEmission = 9_500_000;
+          const realApy = poolRsc > 0 ? annualEmission / poolRsc : 0;
+
+          // Livebar — real data
+          el('live-pool').textContent = fmtRsc(poolRsc) + ' RSC';
+          el('live-participation').textContent = fmtPct(participation) + '%';
+          el('live-apy').textContent = fmtPct(realApy) + '% APY';
+
+          // KPI cards — real data
+          if (poolRsc >= 1e6) {
+            el('kpi-pool').textContent = (poolRsc / 1e6).toFixed(1);
+          } else {
+            el('kpi-pool').textContent = (poolRsc / 1e3).toFixed(0);
+            el('kpi-pool').nextElementSibling.textContent = 'K RSC';
+          }
+          el('kpi-participation').textContent = fmtPct(participation);
+          el('kpi-apy').textContent = fmtPct(realApy);
+
+          // Context strip — real data
+          el('ctx-circ').textContent = 'Circ: ' + fmtRsc(CIRCULATING_SUPPLY) + ' RSC';
+          el('ctx-price').textContent = 'Price: $' + priceUsd.toFixed(4);
+          el('ctx-emission').textContent = 'Emission: ' + fmtRsc(annualEmission / 52) + '/wk';
+
+          // Timestamp
+          const ts = chain.pool.timestamp;
+          if (ts) {
+            const ago = timeSince(ts);
+            document.querySelector('.livebar span:nth-child(4)').textContent = 'updated ' + ago;
+          }
+
+          // APY trend
+          if (realApy > 5.0) {
+            el('kpi-apy-trend').innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 2L8 6H2L5 2Z" fill="currentColor"/></svg> very high (early stage)';
+            el('kpi-apy-trend').className = 'kpi-trend up';
+          } else if (realApy > 0.20) {
+            el('kpi-apy-trend').innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg> compressing (healthy)';
+            el('kpi-apy-trend').className = 'kpi-trend model-derived';
+          } else if (realApy > 0.05) {
+            el('kpi-apy-trend').innerHTML = 'stabilizing';
+            el('kpi-apy-trend').className = 'kpi-trend context';
+          } else {
+            el('kpi-apy-trend').innerHTML = 'low yield';
+            el('kpi-apy-trend').className = 'kpi-trend down';
+          }
+
+          // Treasury watch
+          if (chain.treasury && chain.treasury.length > 0) {
+            updateTreasury(chain.treasury);
+          }
+
+          // Health from chain data
+          el('health-holders').textContent = '~' + (chain.treasury ? chain.treasury.length + 1 : '?');
+          el('ctx-holders').textContent = 'Depositors: tracked';
+
+          const healthColor = realApy > 0.10 ? 'green' : realApy > 0.03 ? 'amber' : 'red';
+          el('health-dot-balance').className = 'health-dot ' + healthColor;
+          el('health-balance').textContent = healthColor === 'green' ? 'Active' : healthColor === 'amber' ? 'Slowing' : 'Stressed';
+        }
+      } catch (e) {
+        console.warn('Chain data fetch failed, falling back to model:', e);
+        await refreshFromModel();
+      }
+    }
+
+    async function refreshFromModel() {
+      const el = id => document.getElementById(id);
       try {
         const res = await fetch('/api/status');
         const d = await res.json();
-
-        // Livebar
-        const el = id => document.getElementById(id);
         el('live-pool').textContent = fmtRsc(d.total_staked) + ' RSC';
         el('live-participation').textContent = fmtPct(d.participation_rate) + '%';
         el('live-apy').textContent = fmtPct(d.apy) + '% APY';
-
-        // KPI cards
         el('kpi-pool').textContent = (d.total_staked / 1e6).toFixed(1);
         el('kpi-participation').textContent = fmtPct(d.participation_rate);
         el('kpi-apy').textContent = fmtPct(d.apy);
-
-        // Health indicators
-        el('health-holders').textContent = d.active_holders;
-        el('ctx-holders').textContent = 'Holders: ' + d.active_holders;
-        el('ctx-emission').textContent = 'Emission: ' + fmtRsc(d.weekly_emission) + '/wk';
-
-        // Health dot colors based on model health
-        const dotClass = d.health_color === 'green' ? 'green' : d.health_color === 'amber' ? 'amber' : 'red';
-        el('health-dot-balance').className = 'health-dot ' + dotClass;
-        el('health-balance').textContent = d.health_color === 'green' ? 'Active' : d.health_color === 'amber' ? 'Slowing' : 'Stressed';
-
-        // APY trend
-        if (d.apy > 0.20) {
-          el('kpi-apy-trend').innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg> compressing (healthy)';
-          el('kpi-apy-trend').className = 'kpi-trend model-derived';
-        } else if (d.apy > 0.05) {
-          el('kpi-apy-trend').innerHTML = 'stabilizing';
-          el('kpi-apy-trend').className = 'kpi-trend context';
-        } else {
-          el('kpi-apy-trend').innerHTML = '<svg width="9" height="9" viewBox="0 0 10 10"><path d="M5 8L2 4H8L5 8Z" fill="currentColor"/></svg> low yield';
-          el('kpi-apy-trend').className = 'kpi-trend down';
-        }
-
-        // Step/year in footer
-        if (d.step > 0) {
-          el('ctx-circ').textContent = 'Week ' + d.step + ' · Year ' + d.year;
-        }
       } catch (e) {
-        console.warn('Status fetch failed:', e);
+        console.warn('Model status also failed:', e);
       }
+    }
+
+    function timeSince(isoStr) {
+      const diff = Date.now() - new Date(isoStr + 'Z').getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return mins + 'm ago';
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h ago';
+      return Math.floor(hrs / 24) + 'd ago';
+    }
+
+    function updateTreasury(treasuryData) {
+      document.querySelectorAll('.treasury-card').forEach(card => {
+        const label = card.dataset.label;
+        const t = treasuryData.find(t => t.label === label);
+        if (t) {
+          const valEl = card.querySelector('.treasury-value');
+          if (valEl) valEl.textContent = fmtRsc(t.total_rsc);
+        }
+      });
     }
 
     // ── Scenario SVG overlays (static paths, kept for growth) ──
@@ -1148,9 +1216,15 @@
       }
     }
 
-    // ── Init: start model and populate KPIs ──
+    // ── Init: take chain snapshot, start model, populate KPIs ──
     async function init() {
       try {
+        // Take a fresh chain snapshot (non-blocking if API key missing)
+        fetch('/api/chain/snapshot', { method: 'POST' })
+          .then(() => refreshStatus())
+          .catch(() => {});
+
+        // Init the sim model for the Simulation tab
         await fetch('/api/init', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1160,6 +1234,8 @@
             seed: 42,
           }),
         });
+
+        // Populate KPIs (chain data if available, model fallback)
         await refreshStatus();
       } catch (e) {
         console.warn('Init failed — server may not be running:', e);

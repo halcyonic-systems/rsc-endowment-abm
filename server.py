@@ -21,6 +21,7 @@ from src import (
     list_archetypes,
     list_scenarios,
 )
+from src.data import take_snapshot, get_latest_snapshot
 
 app = Flask(__name__)
 
@@ -318,6 +319,136 @@ def api_status():
 def api_scenarios():
     """List available stress scenarios."""
     return jsonify(list_scenarios())
+
+
+@app.route("/api/forecast", methods=["POST"])
+def api_forecast():
+    """Forecast mode: init model from chain state, run N steps forward."""
+    global model
+    data = request.get_json() or {}
+    steps = data.get("steps", 26)
+    scenario = data.get("scenario")
+
+    try:
+        snapshot = take_snapshot()
+        model = EndowmentModel.from_chain_data(
+            snapshot,
+            num_synthetic=data.get("num_synthetic", 50),
+            scenario=scenario,
+            seed=data.get("seed", 42),
+        )
+
+        anchored = sum(1 for h in model.holders if getattr(h, 'anchored', False))
+        pre_apy = model.current_apy()
+
+        model.run_steps(steps)
+
+        return jsonify({
+            "status": "ok",
+            "mode": "forecast",
+            "init": {
+                "pool_rsc": round(snapshot["pool"]["total_rsc"], 0),
+                "price_usd": round(snapshot["pool"]["price_usd"], 6),
+                "anchored_holders": anchored,
+                "synthetic_holders": len(model.holders) - anchored,
+                "init_apy": round(pre_apy, 4),
+            },
+            "result": {
+                "steps_run": steps,
+                "final_apy": round(model.current_apy(), 4),
+                "final_pool": round(model.total_rsc_held, 0),
+                "active_holders": len([h for h in model.holders if h.active]),
+                "participation_rate": round(model.participation_rate, 4),
+            },
+            "model": model.to_dict(),
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/chain/snapshot", methods=["POST"])
+def api_chain_snapshot():
+    """Take a fresh chain data snapshot from Dune Sim API."""
+    try:
+        result = take_snapshot()
+        pool = result["pool"]
+        return jsonify({
+            "status": "ok",
+            "pool_rsc": round(pool["total_rsc"], 0),
+            "price_usd": round(pool["price_usd"], 6),
+            "value_usd": round(pool["total_usd"], 2),
+            "chains": pool["chains"],
+            "treasuries": len(result["treasuries"]),
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/chain/latest")
+def api_chain_latest():
+    """Get the most recent chain data snapshot from local store."""
+    latest = get_latest_snapshot()
+    if not latest["pool"]:
+        return jsonify({"status": "no_data", "message": "No snapshots yet. POST /api/chain/snapshot first."})
+    return jsonify({
+        "status": "ok",
+        "pool": latest["pool"],
+        "treasury": latest["treasury"],
+        "history_points": len(latest["history"]),
+    })
+
+
+@app.route("/api/chain/history")
+def api_chain_history():
+    """Get pool size history for charting."""
+    latest = get_latest_snapshot()
+    return jsonify(latest["history"])
+
+
+@app.route("/api/chain/health")
+def api_chain_health():
+    """Compute system health indicators from chain data."""
+    latest = get_latest_snapshot()
+    if not latest["pool"]:
+        return jsonify({"status": "no_data"})
+
+    pool_rsc = latest["pool"]["total_rsc"]
+    price = latest["pool"].get("price_usd", 0)
+    circ = EMISSION_PARAMS["year0_circulating"]
+    participation = pool_rsc / circ if circ > 0 else 0
+    apy = EMISSION_PARAMS["year0_emission"] / pool_rsc if pool_rsc > 0 else 0
+
+    # Concentration: what % of pool is in the largest treasury?
+    treasury_total = sum(t.get("total_rsc", 0) for t in latest["treasury"])
+    foundation = next(
+        (t for t in latest["treasury"] if t["label"] == "foundation_treasury"), None
+    )
+    foundation_rsc = foundation["total_rsc"] if foundation else 0
+    foundation_pct = foundation_rsc / circ if circ > 0 else 0
+
+    # Health color
+    if apy > 0.10 and participation > 0.01:
+        overall = "green"
+    elif apy > 0.03:
+        overall = "amber"
+    else:
+        overall = "red"
+
+    return jsonify({
+        "status": "ok",
+        "pool_rsc": round(pool_rsc, 0),
+        "participation": round(participation, 4),
+        "apy": round(apy, 4),
+        "price_usd": round(price, 6),
+        "overall_health": overall,
+        "concentration": {
+            "foundation_pct": round(foundation_pct, 4),
+            "foundation_rsc": round(foundation_rsc, 0),
+            "level": "high" if foundation_pct > 0.40 else "medium" if foundation_pct > 0.20 else "low",
+        },
+        "self_balancing": "active" if apy > 0.05 else "slowing" if apy > 0.02 else "stalled",
+        "timestamp": latest["pool"]["timestamp"],
+    })
 
 
 # ============================================

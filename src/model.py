@@ -525,6 +525,67 @@ class EndowmentModel(Model):
         for _ in range(n):
             self.step()
 
+    @classmethod
+    def from_chain_data(cls, chain_snapshot: dict, num_synthetic: int = 50,
+                        scenario: dict = None, seed: int = None):
+        """
+        Forecast mode: initialize from real on-chain state.
+
+        chain_snapshot: output of take_snapshot() — pool + treasury data.
+        Anchored holders created from wallet data, synthetic agents fill the gap.
+        """
+        from .agents import AnchoredHolder
+
+        pool = chain_snapshot["pool"]
+        pool_rsc = pool["total_rsc"]
+        circ = EMISSION_PARAMS["year0_circulating"]
+        participation = pool_rsc / circ if circ > 0 else 0.30
+
+        model = cls(
+            num_holders=0,
+            initial_participation_rate=participation,
+            scenario=scenario,
+            seed=seed,
+        )
+
+        # Create anchored holders from wallet breakdown
+        wallets = pool.get("wallets", {})
+        for label, wallet_data in wallets.items():
+            if wallet_data.get("total_rsc", 0) > 100:
+                holder = AnchoredHolder(
+                    model,
+                    address=wallet_data.get("address", label),
+                    rsc_held=wallet_data["total_rsc"],
+                    chain="multi",
+                )
+                model.holders.append(holder)
+
+        # Fill remaining pool RSC with synthetic agents
+        anchored_total = sum(h.rsc_held for h in model.holders)
+        remaining = max(0, pool_rsc - anchored_total)
+
+        if num_synthetic > 0 and remaining > 0:
+            model.num_holders = num_synthetic
+            model._spawn_holders(num_synthetic)
+            synthetic_total = sum(
+                h.rsc_held for h in model.holders if not getattr(h, 'anchored', False)
+            )
+            if synthetic_total > 0:
+                scale = remaining / synthetic_total
+                for h in model.holders:
+                    if not getattr(h, 'anchored', False):
+                        h.rsc_held = int(h.rsc_held * scale)
+                        h.initial_rsc = h.rsc_held
+
+        model.datacollector.collect(model)
+        model.log_event(
+            "init",
+            f"Forecast mode: {len(model.holders)} holders "
+            f"({sum(1 for h in model.holders if getattr(h, 'anchored', False))} anchored), "
+            f"{pool_rsc:,.0f} RSC, APY={model.current_apy():.1%}"
+        )
+        return model
+
     # ============================================
     # Serialization
     # ============================================

@@ -161,9 +161,9 @@ class TestAPIStatus:
         resp = client.get("/api/scenarios")
         data = resp.get_json()
 
-        assert len(data) == 3
+        assert len(data) == 4
         ids = {s["id"] for s in data}
-        assert ids == {"whale_exit", "foundation_flood", "cascade_exit"}
+        assert ids == {"whale_exit", "foundation_flood", "cascade_exit", "mint_event"}
 
     def test_init_with_scenario(self):
         import server as srv

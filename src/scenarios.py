@@ -65,6 +65,17 @@ def cascade_exit(model):
     )
 
 
+def mint_event(model):
+    """MiniMeToken controller mints 100M new RSC, diluting circulating supply."""
+    mint_amount = 100_000_000
+    model.year0_circulating += mint_amount
+    model.log_event(
+        "scenario",
+        f"MINT EVENT: {mint_amount:,.0f} RSC minted, "
+        f"circulating supply now {model.circulating_supply:,.0f}"
+    )
+
+
 SCENARIOS = {
     "whale_exit": {
         "name": "Whale Exit",
@@ -80,6 +91,11 @@ SCENARIOS = {
         "name": "Cascade Exit",
         "description": "All yield seekers below their APY threshold exit simultaneously.",
         "factory": cascade_exit,
+    },
+    "mint_event": {
+        "name": "Mint Event",
+        "description": "MiniMeToken controller mints 100M RSC, diluting all holders.",
+        "factory": mint_event,
     },
 }
 

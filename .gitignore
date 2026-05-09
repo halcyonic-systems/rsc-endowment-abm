@@ -24,3 +24,4 @@ Thumbs.db
 # Internal context (not for public repo)
 CLAUDE.md
 rsc-staking-project-background.md
+*.db
