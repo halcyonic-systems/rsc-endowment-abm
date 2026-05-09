@@ -560,8 +560,13 @@
             <div class="health-strip">
               <div class="health-item">
                 <div class="health-dot teal" id="health-dot-concentration"></div>
-                <div class="health-value t-mono" id="health-concentration">Low</div>
+                <div class="health-value t-mono" id="health-concentration">—</div>
                 <div class="t-caption">Concentration</div>
+              </div>
+              <div class="health-item">
+                <div class="health-dot amber" id="health-dot-divergence"></div>
+                <div class="health-value t-mono" id="health-divergence">—</div>
+                <div class="t-caption">Model fit</div>
               </div>
               <div class="health-item">
                 <div class="health-dot teal" id="health-dot-balance"></div>
@@ -928,11 +933,11 @@
                 <p id="scenario-desc-cascade">All yield seekers below threshold exit. Click to simulate.</p>
                 <span class="scenario-tag">Loop risk</span>
               </div>
-              <div class="scenario-card panel panel--hairline" data-scenario="growth" onclick="toggleScenario(this)">
-                <div class="scenario-icon growth">&#x2197;</div>
-                <h3>Steady growth</h3>
-                <p>+1%/month. Pool reaches ~14.8M in 4 weeks.</p>
-                <span class="scenario-tag">Base case</span>
+              <div class="scenario-card panel panel--hairline" data-scenario="mint" onclick="runScenario(this)">
+                <div class="scenario-icon risk">&#x1F4B0;</div>
+                <h3>Mint event</h3>
+                <p id="scenario-desc-mint">100M RSC minted, diluting all holders. Click to simulate.</p>
+                <span class="scenario-tag">Supply risk</span>
               </div>
             </div>
           </div>
@@ -1039,6 +1044,24 @@
           el('health-dot-balance').className = 'health-dot ' + healthColor;
           el('health-balance').textContent = healthColor === 'green' ? 'Active' : healthColor === 'amber' ? 'Slowing' : 'Stressed';
         }
+
+        // Fetch health analytics (HHI, model vs reality)
+        const healthRes = await fetch('/api/chain/health');
+        const health = await healthRes.json();
+        if (health.status === 'ok') {
+          // Concentration HHI
+          const conc = health.concentration;
+          el('health-concentration').textContent = conc.hhi_label;
+          const concDot = conc.hhi > 0.25 ? 'red' : conc.hhi > 0.15 ? 'amber' : 'teal';
+          el('health-dot-concentration').className = 'health-dot ' + concDot;
+
+          // Model vs Reality divergence
+          const mvr = health.model_vs_reality;
+          const divPct = Math.abs(mvr.divergence_participation * 100).toFixed(0);
+          el('health-divergence').textContent = divPct + '% off';
+          const divDot = Math.abs(mvr.divergence_participation) > 0.15 ? 'red' : Math.abs(mvr.divergence_participation) > 0.05 ? 'amber' : 'green';
+          el('health-dot-divergence').className = 'health-dot ' + divDot;
+        }
       } catch (e) {
         console.warn('Chain data fetch failed, falling back to model:', e);
         await refreshFromModel();
@@ -1137,6 +1160,7 @@
       whale: 'whale_exit',
       foundation: 'foundation_flood',
       cascade: 'cascade_exit',
+      mint: 'mint_event',
     };
 
     async function runScenario(el) {
@@ -1153,32 +1177,26 @@
 
       try {
         const scenarioName = SCENARIO_MAP[id];
-        await fetch('/api/init', {
+        const forecastRes = await fetch('/api/forecast', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            num_holders: 100,
-            initial_participation_rate: 0.30,
+            steps: 26,
             seed: 42,
-            scenario: { name: scenarioName, trigger_step: 13 },
+            scenario: { name: scenarioName, trigger_step: 4 },
           }),
         });
+        const data = await forecastRes.json();
 
-        // Run 26 weeks (6 months) to see scenario impact
-        const runRes = await fetch('/api/run', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ steps: 26 }),
-        });
-        const data = await runRes.json();
-        const m = data.model;
+        if (data.status !== 'ok') throw new Error(data.message || 'Forecast failed');
 
-        const poolAfter = fmtRsc(m.total_rsc_held);
-        const apyAfter = fmtPct(m.current_apy);
-        const active = m.active_holders;
+        const poolAfter = fmtRsc(data.result.final_pool);
+        const apyAfter = fmtPct(data.result.final_apy);
+        const active = data.result.active_holders;
+        const initPool = fmtRsc(data.init.pool_rsc);
 
         if (descEl) {
-          descEl.textContent = `Pool: ${poolAfter} RSC · APY: ${apyAfter}% · ${active} holders after 26 wks`;
+          descEl.textContent = `From ${initPool} → ${poolAfter} RSC · APY: ${apyAfter}% · ${active} holders (26 wks)`;
         }
 
         // Update the sim annotation
@@ -1204,12 +1222,6 @@
         if (path) path.style.display = 'block';
         if (dot) dot.style.display = 'block';
 
-        // Re-init baseline model after scenario display
-        await fetch('/api/init', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ num_holders: 100, initial_participation_rate: 0.30, seed: 42 }),
-        });
       } catch (e) {
         console.warn('Scenario run failed:', e);
         if (descEl) descEl.textContent = 'Simulation failed. Check server.';

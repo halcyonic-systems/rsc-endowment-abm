@@ -117,3 +117,48 @@ class DuneSimClient:
             f"transactions/{address}",
             {"chain_ids": str(chain_id), "limit": str(limit)},
         )
+
+    def get_rsc_depositors(self, limit: int = 100) -> list:
+        """
+        Identify individual depositors by tracing RSC transfers into
+        the hot wallet and second wallet across both chains.
+        """
+        depositors = {}
+        transfer_topic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+
+        for wallet_label in ["hot_wallet", "second_wallet"]:
+            address = WATCHED_WALLETS[wallet_label].lower()
+            for chain_id, rsc_addr in [(8453, RSC_CONTRACTS["base"]), (1, RSC_CONTRACTS["ethereum"])]:
+                try:
+                    data = self.get_transactions(address, chain_id=chain_id, limit=limit)
+                    for tx in data.get("transactions", []):
+                        for log in tx.get("logs", []):
+                            topics = log.get("topics", [])
+                            if (log["address"].lower() == rsc_addr.lower()
+                                    and len(topics) >= 3
+                                    and topics[0] == transfer_topic):
+                                recipient = "0x" + topics[2][-40:]
+                                if recipient.lower() != address:
+                                    continue
+                                sender = "0x" + topics[1][-40:]
+                                raw_amount = int(log["data"], 16)
+                                amount = raw_amount / 1e18
+
+                                if sender not in depositors:
+                                    depositors[sender] = {
+                                        "address": sender,
+                                        "total_rsc": 0,
+                                        "tx_count": 0,
+                                        "first_deposit": tx["block_time"],
+                                        "last_deposit": tx["block_time"],
+                                    }
+                                depositors[sender]["total_rsc"] += amount
+                                depositors[sender]["tx_count"] += 1
+                                if tx["block_time"] < depositors[sender]["first_deposit"]:
+                                    depositors[sender]["first_deposit"] = tx["block_time"]
+                                if tx["block_time"] > depositors[sender]["last_deposit"]:
+                                    depositors[sender]["last_deposit"] = tx["block_time"]
+                except Exception:
+                    continue
+
+        return sorted(depositors.values(), key=lambda d: d["total_rsc"], reverse=True)

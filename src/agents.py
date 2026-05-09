@@ -187,29 +187,39 @@ class EndowmentHolder(Agent):
         """
         Should this holder exit (pull RSC from RH account)?
 
-        Driven by: current APY vs. personal yield_threshold
-        - price_sensitivity amplifies the exit probability
-        - hold_horizon dampens it (long-term holders resist exiting)
-        - Believers and institutions almost never exit regardless of yield
+        Two exit pressures:
+        1. Yield pressure: APY below personal threshold
+        2. Price pressure: RSC price dropped significantly from entry
+
+        Both modulated by price_sensitivity (amplifies) and hold_horizon (dampens).
         """
         current_apy = self.model.current_apy()
+        exit_reason = None
 
-        if current_apy >= self.yield_threshold:
-            return  # Yield is above threshold -- no pressure to exit
+        # Yield-driven exit
+        if current_apy < self.yield_threshold:
+            gap = (self.yield_threshold - current_apy) / max(self.yield_threshold, 0.001)
+            gap = min(gap, 1.0)
+            exit_prob = gap * self.price_sensitivity * 0.15
+            exit_prob *= (1.0 - self.hold_horizon * 0.8)
+            if random.random() < exit_prob:
+                exit_reason = f"APY {current_apy:.1%} < threshold {self.yield_threshold:.1%}"
 
-        # How far below threshold (0-1 scale)
-        gap = (self.yield_threshold - current_apy) / max(self.yield_threshold, 0.001)
-        gap = min(gap, 1.0)
+        # Price-driven exit (if model has price data)
+        if not exit_reason and hasattr(self.model, 'rsc_price') and self.model.rsc_price:
+            entry_price = getattr(self, 'entry_price', self.model.rsc_price)
+            if self.model.rsc_price < entry_price * 0.7:
+                price_drop = 1.0 - (self.model.rsc_price / entry_price)
+                exit_prob = price_drop * self.price_sensitivity * 0.20
+                exit_prob *= (1.0 - self.hold_horizon * 0.9)
+                if random.random() < exit_prob:
+                    exit_reason = f"price ${self.model.rsc_price:.4f} down {price_drop:.0%} from entry"
 
-        # Exit probability: price_sensitivity amplifies, hold_horizon dampens
-        exit_prob = gap * self.price_sensitivity * 0.15  # max ~15%/step at full sensitivity
-        exit_prob *= (1.0 - self.hold_horizon * 0.8)    # long-term holders mostly immune
-
-        if random.random() < exit_prob:
+        if exit_reason:
             self.active = False
             self.model.log_event(
                 "exit",
-                f"H{self.unique_id} ({self.archetype}) exited -- APY {current_apy:.1%} < threshold {self.yield_threshold:.1%}"
+                f"H{self.unique_id} ({self.archetype}) exited -- {exit_reason}"
             )
 
     # ============================================
@@ -386,6 +396,7 @@ class AnchoredHolder(EndowmentHolder):
         self.deposit_date = deposit_date
         self.chain = chain
         self.anchored = True
+        self.entry_price = getattr(model, 'rsc_price', None)
 
     @staticmethod
     def _infer_archetype(rsc_held: float) -> str:

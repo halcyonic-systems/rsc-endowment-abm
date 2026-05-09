@@ -547,6 +547,7 @@ class EndowmentModel(Model):
             scenario=scenario,
             seed=seed,
         )
+        model.rsc_price = pool.get("price_usd", 0)
 
         # Create anchored holders from wallet breakdown
         wallets = pool.get("wallets", {})

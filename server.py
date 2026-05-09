@@ -22,6 +22,7 @@ from src import (
     list_scenarios,
 )
 from src.data import take_snapshot, get_latest_snapshot
+from src.data.dune_sim import DuneSimClient
 
 app = Flask(__name__)
 
@@ -324,24 +325,23 @@ def api_scenarios():
 @app.route("/api/forecast", methods=["POST"])
 def api_forecast():
     """Forecast mode: init model from chain state, run N steps forward."""
-    global model
     data = request.get_json() or {}
     steps = data.get("steps", 26)
     scenario = data.get("scenario")
 
     try:
         snapshot = take_snapshot()
-        model = EndowmentModel.from_chain_data(
+        forecast_model = EndowmentModel.from_chain_data(
             snapshot,
             num_synthetic=data.get("num_synthetic", 50),
             scenario=scenario,
             seed=data.get("seed", 42),
         )
 
-        anchored = sum(1 for h in model.holders if getattr(h, 'anchored', False))
-        pre_apy = model.current_apy()
+        anchored = sum(1 for h in forecast_model.holders if getattr(h, 'anchored', False))
+        pre_apy = forecast_model.current_apy()
 
-        model.run_steps(steps)
+        forecast_model.run_steps(steps)
 
         return jsonify({
             "status": "ok",
@@ -350,17 +350,17 @@ def api_forecast():
                 "pool_rsc": round(snapshot["pool"]["total_rsc"], 0),
                 "price_usd": round(snapshot["pool"]["price_usd"], 6),
                 "anchored_holders": anchored,
-                "synthetic_holders": len(model.holders) - anchored,
+                "synthetic_holders": len(forecast_model.holders) - anchored,
                 "init_apy": round(pre_apy, 4),
             },
             "result": {
                 "steps_run": steps,
-                "final_apy": round(model.current_apy(), 4),
-                "final_pool": round(model.total_rsc_held, 0),
-                "active_holders": len([h for h in model.holders if h.active]),
-                "participation_rate": round(model.participation_rate, 4),
+                "final_apy": round(forecast_model.current_apy(), 4),
+                "final_pool": round(forecast_model.total_rsc_held, 0),
+                "active_holders": len([h for h in forecast_model.holders if h.active]),
+                "participation_rate": round(forecast_model.participation_rate, 4),
             },
-            "model": model.to_dict(),
+            "model": forecast_model.to_dict(),
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -398,6 +398,21 @@ def api_chain_latest():
     })
 
 
+@app.route("/api/chain/depositors")
+def api_chain_depositors():
+    """Trace RSC depositors from on-chain transfer history."""
+    try:
+        client = DuneSimClient()
+        depositors = client.get_rsc_depositors(limit=50)
+        return jsonify({
+            "status": "ok",
+            "count": len(depositors),
+            "depositors": depositors,
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 @app.route("/api/chain/history")
 def api_chain_history():
     """Get pool size history for charting."""
@@ -418,13 +433,13 @@ def api_chain_health():
     participation = pool_rsc / circ if circ > 0 else 0
     apy = EMISSION_PARAMS["year0_emission"] / pool_rsc if pool_rsc > 0 else 0
 
-    # Concentration: what % of pool is in the largest treasury?
-    treasury_total = sum(t.get("total_rsc", 0) for t in latest["treasury"])
+    # Concentration: foundation as % of total supply (not circulating)
+    total_supply = EMISSION_PARAMS.get("total_supply", 1_000_000_000)
     foundation = next(
         (t for t in latest["treasury"] if t["label"] == "foundation_treasury"), None
     )
     foundation_rsc = foundation["total_rsc"] if foundation else 0
-    foundation_pct = foundation_rsc / circ if circ > 0 else 0
+    foundation_pct = foundation_rsc / total_supply if total_supply > 0 else 0
 
     # Health color
     if apy > 0.10 and participation > 0.01:
@@ -433,6 +448,17 @@ def api_chain_health():
         overall = "amber"
     else:
         overall = "red"
+
+    # HHI: concentration index across known holders
+    all_balances = [t.get("total_rsc", 0) for t in latest["treasury"]] + [pool_rsc]
+    total_all = total_supply
+    hhi = sum((b / total_all) ** 2 for b in all_balances if b > 0) if total_all > 0 else 0
+
+    # Model vs Reality comparison
+    model_predicted_participation = 0.30  # v3 baseline prediction
+    model_predicted_apy = EMISSION_PARAMS["year0_emission"] / (model_predicted_participation * circ)
+    participation_divergence = participation - model_predicted_participation
+    apy_divergence = apy - model_predicted_apy
 
     return jsonify({
         "status": "ok",
@@ -445,8 +471,21 @@ def api_chain_health():
             "foundation_pct": round(foundation_pct, 4),
             "foundation_rsc": round(foundation_rsc, 0),
             "level": "high" if foundation_pct > 0.40 else "medium" if foundation_pct > 0.20 else "low",
+            "hhi": round(hhi, 4),
+            "hhi_label": "monopoly" if hhi > 0.25 else "concentrated" if hhi > 0.15 else "moderate" if hhi > 0.10 else "competitive",
         },
         "self_balancing": "active" if apy > 0.05 else "slowing" if apy > 0.02 else "stalled",
+        "model_vs_reality": {
+            "model_predicted_participation": model_predicted_participation,
+            "actual_participation": round(participation, 4),
+            "divergence_participation": round(participation_divergence, 4),
+            "model_predicted_apy": round(model_predicted_apy, 4),
+            "actual_apy": round(apy, 4),
+            "divergence_apy": round(apy_divergence, 4),
+            "interpretation": "Model overestimated early adoption"
+                if participation < model_predicted_participation
+                else "Adoption exceeds model prediction",
+        },
         "timestamp": latest["pool"]["timestamp"],
     })
 
