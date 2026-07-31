@@ -1,0 +1,144 @@
+{
+  "pool": {
+    "address": "pool_combined",
+    "timestamp": "2026-07-31T01:07:32.092289",
+    "chains": {
+      "base": {
+        "amount": 775.0,
+        "price_usd": 3.8115361317442407e-05,
+        "value_usd": 0.029539405021017866
+      },
+      "ethereum": {
+        "amount": 18992658.846651956,
+        "price_usd": 0.07191820716554821,
+        "value_usd": 1365917.9735580974
+      }
+    },
+    "wallets": {
+      "hot_wallet": {
+        "address": "0x7F57d306a9422ee8175aDc25898B1b2EBF1010cb",
+        "timestamp": "2026-07-31T01:07:32.092289",
+        "chains": {
+          "ethereum": {
+            "amount": 350125.1937978042,
+            "price_usd": 0.07191820716554821,
+            "value_usd": 25180.376221428196
+          },
+          "base": {
+            "amount": 774.0,
+            "price_usd": 3.8115361317442407e-05,
+            "value_usd": 0.029501289659700423
+          }
+        },
+        "total_rsc": 350899.1937978042,
+        "total_usd": 25180.405722717856,
+        "price_usd": 0.035978161263432826
+      },
+      "second_wallet": {
+        "address": "0x467564DCCE90FB21153adfa69c48A3Be235d66D3",
+        "timestamp": "2026-07-31T01:07:32.265256",
+        "chains": {
+          "ethereum": {
+            "amount": 18642533.652854152,
+            "price_usd": 0.07191820716554821,
+            "value_usd": 1340737.5973366692
+          },
+          "base": {
+            "amount": 1.0,
+            "price_usd": 3.8115361317442407e-05,
+            "value_usd": 3.8115361317442407e-05
+          }
+        },
+        "total_rsc": 18642534.652854152,
+        "total_usd": 1340737.5973747845,
+        "price_usd": 0.035978161263432826
+      }
+    },
+    "total_rsc": 18993433.846651956,
+    "total_usd": 1365918.0030975023,
+    "price_usd": 0.035978161263432826
+  },
+  "treasuries": [
+    {
+      "address": "0x467564DCCE90FB21153adfa69c48A3Be235d66D3",
+      "timestamp": "2026-07-31T01:07:32.422241",
+      "chains": {
+        "ethereum": {
+          "amount": 18642533.652854152,
+          "price_usd": 0.07191820716554821,
+          "value_usd": 1340737.5973366692
+        },
+        "base": {
+          "amount": 1.0,
+          "price_usd": 3.8115361317442407e-05,
+          "value_usd": 3.8115361317442407e-05
+        }
+      },
+      "total_rsc": 18642534.652854152,
+      "total_usd": 1340737.5973747845,
+      "price_usd": 0.035978161263432826,
+      "label": "second_wallet"
+    },
+    {
+      "address": "0x5222ff25f4dfc02d173c2cbd2055ee1d35f291f1",
+      "timestamp": "2026-07-31T01:07:32.617788",
+      "chains": {
+        "ethereum": {
+          "amount": 455674632.98832965,
+          "price_usd": 0.07191820716554821,
+          "value_usd": 32771302.65533984
+        }
+      },
+      "total_rsc": 455674632.98832965,
+      "total_usd": 32771302.65533984,
+      "price_usd": 0.07191820716554821,
+      "label": "foundation_treasury"
+    },
+    {
+      "address": "0xe3648e99b6e68a09e28428790d12b357f081dbe0",
+      "timestamp": "2026-07-31T01:07:32.887185",
+      "chains": {
+        "ethereum": {
+          "amount": 297839108.33337003,
+          "price_usd": 0.07191820716554821,
+          "value_usd": 21420054.695121463
+        }
+      },
+      "total_rsc": 297839108.33337003,
+      "total_usd": 21420054.695121463,
+      "price_usd": 0.07191820716554821,
+      "label": "team_treasury"
+    },
+    {
+      "address": "0xc4cfa2bdae08416312faa0b72758e1f3750f81e3",
+      "timestamp": "2026-07-31T01:07:33.133155",
+      "chains": {
+        "ethereum": {
+          "amount": 14092043.429854855,
+          "price_usd": 0.07191820716554821,
+          "value_usd": 1013474.498774204
+        }
+      },
+      "total_rsc": 14092043.429854855,
+      "total_usd": 1013474.498774204,
+      "price_usd": 0.07191820716554821,
+      "label": "foundation_community"
+    },
+    {
+      "address": "0xb280f00e70f28e8ce38c40826270de7e1b327e21",
+      "timestamp": "2026-07-31T01:07:33.364862",
+      "chains": {
+        "base": {
+          "amount": 1.0,
+          "price_usd": 3.8115361317442407e-05,
+          "value_usd": 3.8115361317442407e-05
+        }
+      },
+      "total_rsc": 1.0,
+      "total_usd": 3.8115361317442407e-05,
+      "price_usd": 3.8115361317442407e-05,
+      "label": "base_treasury"
+    }
+  ],
+  "depositors": []
+}

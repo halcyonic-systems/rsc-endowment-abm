@@ -5,13 +5,13 @@ Call take_snapshot() daily (manually or via cron) to capture
 pool state, treasury balances, and RSC price.
 """
 
-from .dune_sim import DuneSimClient
+from .chain_client import ChainClient
 from .store import DataStore
 
 
 def take_snapshot(db_path: str = None, api_key: str = None) -> dict:
     """Pull live chain data and save to store. Returns the pool snapshot."""
-    client = DuneSimClient(api_key=api_key)
+    client = ChainClient(api_key=api_key)
     store = DataStore(db_path=db_path)
 
     pool = client.get_pool_snapshot()

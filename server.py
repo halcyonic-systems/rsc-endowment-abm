@@ -22,7 +22,7 @@ from src import (
     list_scenarios,
 )
 from src.data import take_snapshot, get_latest_snapshot
-from src.data.dune_sim import DuneSimClient
+from src.data.chain_client import ChainClient
 
 app = Flask(__name__)
 
@@ -402,7 +402,7 @@ def api_chain_latest():
 def api_chain_depositors():
     """Trace RSC depositors from on-chain transfer history."""
     try:
-        client = DuneSimClient()
+        client = ChainClient()
         depositors = client.get_rsc_depositors(limit=50)
         return jsonify({
             "status": "ok",

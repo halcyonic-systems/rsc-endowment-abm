@@ -1,9 +1,9 @@
-from .dune_sim import DuneSimClient
+from .chain_client import ChainClient
 from .store import DataStore
 from .snapshot import take_snapshot, get_latest_snapshot
 
 __all__ = [
-    "DuneSimClient",
+    "ChainClient",
     "DataStore",
     "take_snapshot",
     "get_latest_snapshot",

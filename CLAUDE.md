@@ -26,11 +26,11 @@ Password-gated via `DASHBOARD_PASSWORD` env var (Railway + GitHub Actions secret
 
 **Three operating modes:**
 - **Synthetic** — v3 behavior, unchanged, default for `/api/init`
-- **Forecast** — `EndowmentModel.from_chain_data()` inits from live Dune Sim API data, runs forward with anchored + synthetic agents. Endpoint: `POST /api/forecast`
+- **Forecast** — `EndowmentModel.from_chain_data()` inits from live chain data (Blockscout + CoinGecko), runs forward with anchored + synthetic agents. Endpoint: `POST /api/forecast`
 - **Replay** — not yet implemented (needs accumulated daily snapshots, see GitHub issue #1)
 
 **Infrastructure:**
-- **Data layer**: Dune Sim API → SQLite (`/data/endowment.db` on Railway volume) → Flask API → frontend
+- **Data layer**: Blockscout + CoinGecko (keyless; Dune Sim retired at its 2026-08-01 sunset) → SQLite (`/data/endowment.db` on Railway volume) → Flask API → frontend
 - **Daily snapshot cron**: GitHub Actions workflow (`.github/workflows/daily-snapshot.yml`), fires noon UTC, persists pool + treasury balances. Started 2026-05-09.
 - **Railway volume**: `rsc-endowment-abm-volume` mounted at `/data` — SQLite survives redeployments
 - **4 stress scenarios**: whale exit, foundation flood, cascade exit, mint event (`src/scenarios.py`)
@@ -55,7 +55,7 @@ python server.py
 | `src/agents.py` | EndowmentHolder, AnchoredHolder (real depositors), EndowmentProposal |
 | `src/constants.py` | EMISSION_PARAMS, ARCHETYPES, DEFAULT_PARAMS (burn/multiplier toggles) |
 | `src/scenarios.py` | StressScenario: whale exit, foundation flood, cascade exit, mint event |
-| `src/data/dune_sim.py` | Dune Sim API client — balances, transactions, depositor tracing |
+| `src/data/chain_client.py` | Chain data client (Blockscout + CoinGecko) — balances, transfers, depositor tracing |
 | `src/data/store.py` | SQLite persistence — pool_snapshots, treasury_snapshots |
 | `src/data/snapshot.py` | Orchestrator: take_snapshot(), get_latest_snapshot() |
 | `server.py` | Flask REST API (25+ endpoints including /api/forecast, /api/chain/*) |
@@ -78,9 +78,9 @@ python server.py
 | **Auth** | HTTP Basic Auth via `DASHBOARD_PASSWORD` env var |
 | **Volume** | `rsc-endowment-abm-volume` mounted at `/data` — SQLite persists across redeploys |
 | **Cron** | `.github/workflows/daily-snapshot.yml` — noon UTC daily, calls `POST /api/chain/snapshot` |
-| **Env vars (Railway)** | `DASHBOARD_PASSWORD`, `DUNE_SIM_API_KEY`, `FLASK_DEBUG=false` |
+| **Env vars (Railway)** | `DASHBOARD_PASSWORD`, `FLASK_DEBUG=false` (`DUNE_SIM_API_KEY` obsolete, safe to delete) |
 | **Secrets (GitHub)** | `DASHBOARD_PASSWORD` (for cron auth) |
-| **API key (local)** | `DUNE_SIM_API_KEY` in macOS Keychain, loaded via `.zshrc` |
+| **API key (local)** | none — Blockscout and CoinGecko are keyless |
 
 ## On-Chain Infrastructure
 
@@ -95,7 +95,7 @@ python server.py
 | RSC (Ethereum) | `0xd101dcc414f310268c37eeb4cd376ccfa507f571` | Ethereum |
 | RSC (Base) | `0xfbb75a59193a3525a8825bebe7d4b56899e2f7e1` | Base |
 
-**API keys:** `DUNE_SIM_API_KEY` in macOS Keychain (loaded via `.zshrc`) AND set as Railway env var for production. Blockscout needs no key.
+**API keys:** none required — Blockscout and CoinGecko free tiers are keyless. (Dune Sim sunset 2026-08-01; ground-truth parity fixture at `tests/fixtures/sim_ground_truth_2026-07-30.json`.)
 
 ## Watch List
 
